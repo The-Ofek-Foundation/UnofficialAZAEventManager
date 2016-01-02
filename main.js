@@ -36,3 +36,6 @@ app.on('ready', function() {
     mainWindow = null;
   });
 });
+
+var oauth2lib = require('oauth20-provider');
+var oauth2 = new oauth2lib({log: {level: 2}});

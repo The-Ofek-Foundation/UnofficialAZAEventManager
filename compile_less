@@ -1,0 +1,3 @@
+lessc UnofficialAZAEventManager.less UnofficialAZAEventManager.css
+
+echo "Less compiled"
