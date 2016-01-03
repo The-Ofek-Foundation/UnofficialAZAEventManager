@@ -34,12 +34,14 @@ function getUnofficialRamonAppRepo(user, callback) {
 	user.repos("all", function(err, repos) {
 		if (err)
 			callback("login_err", null);
-		else for (var i = 0; i < repos.length; i++)
-			if (repos[i].id = "42672465") {
-				callback(false, repos[i]);
-				return;
-			}
-		callback("repo_not_found", null);
+		else {
+			for (var i = 0; i < repos.length; i++)
+				if (repos[i].id = "42672465") {
+					callback(false, repos[i]);
+					return;
+				}
+			callback("repo_not_found", null);
+		}
 	});
 }
 
@@ -78,6 +80,7 @@ function loadUserFromFile() {
 			loginToGithub(userDetails.username, userDetails.password);
 
 			getUnofficialRamonAppRepo(user, function(err, repo) {
+				console.log(err);
 				if (err)
 					if (err == "login_err")
 						$("#login-err").text("Login details changed");
