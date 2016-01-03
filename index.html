@@ -4,10 +4,24 @@
     <meta charset="UTF-8">
     <title>Unofficial AZA Event Manager - login!</title>
     <link rel="stylesheet" type="text/css" href="UnofficialAZAEventManager.css">
-    <script src="jquery-2.1.4.min.js"></script>
   </head>
   <body>
     <h1>Welcome to the Unofficial AZA Event Manager!</h1>
     <h2>Please login to github below to start!</h2>
+    <br /><br />
+    <section class="flippable-container" id="github-login-container">
+      <div class="flippable">
+        <figure class="front">
+          <form id="github-login-form">
+            <h3>Username: <input type="text" class="inline" placeholder="YOUR_USERNAME" name="username"></h3>
+            <h3>Password: <input type="text" class="inline" placeholder="YOUR_PASSWORD" name="password"></h3>
+            <input type="submit" value="Login to Github" id="github-login"> <span id="login-err"></span>
+            <br /><br />
+          </form>
+        </figure>
+        <figure class="back"><div class="vert-align" id="login-successful">You have successfully logged in</div></figure>
+      </div>
+    </section>
   </body>
+  <script src="UnofficialAZAEventManager.js"></script>
 </html>

@@ -36,5 +36,3 @@ app.on('ready', function() {
     mainWindow = null;
   });
 });
-
-$.post("https://github.com/login/oauth/access_token", {})

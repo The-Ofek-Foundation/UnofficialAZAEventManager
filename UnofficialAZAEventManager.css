@@ -5,3 +5,54 @@ html {
   margin: 0px;
   background-color: lightblue;
 }
+#github-login-container {
+  width: 70%;
+  margin: auto;
+  perspective: 800px;
+  position: relative;
+}
+#github-login-container .flippable {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  transform-origin: right center;
+  transform-style: preserve-3d;
+  transition: transform 1s;
+}
+#github-login-container .flippable figure {
+  backface-visibility: hidden;
+  display: block;
+  position: absolute;
+  margin: 0px;
+  border: 3px solid blue;
+  border-radius: 25px;
+}
+#github-login-container .flippable .back {
+  text-align: center;
+  color: green;
+  transform: rotateY(180deg);
+}
+#github-login-container .flippable.flipped {
+  transform: translateX(-100%) rotateY(-180deg);
+}
+.inline {
+  background-color: transparent;
+  outline: 0px;
+  border: none;
+  border-bottom: 1px solid black;
+  text-align: center;
+  padding-left: 10px;
+  padding-right: 20px;
+}
+.inline:focus {
+  outline: 0px;
+}
+#login-err {
+  color: red;
+  font-weight: bold;
+}
+#login-successful {
+  color: green;
+  font-weight: bold;
+  font-size: 1.6em;
+}
