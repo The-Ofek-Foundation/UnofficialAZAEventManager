@@ -13,8 +13,8 @@
       <div class="flippable">
         <figure class="front">
           <form id="github-login-form">
-            <h3>Username: <input type="text" class="inline" placeholder="YOUR_USERNAME" name="username"></h3>
-            <h3>Password: <input type="text" class="inline" placeholder="YOUR_PASSWORD" name="password"></h3>
+            <h3>Username: <input type="text" class="inline" placeholder="YOUR_USERNAME" name="username" required></h3>
+            <h3>Password: <input type="text" class="inline" placeholder="YOUR_PASSWORD" name="password" required></h3>
             <input type="submit" value="Login to Github" id="github-login"> <span id="login-err"></span>
             <br /><br />
           </form>
@@ -22,6 +22,8 @@
         <figure class="back"><div class="vert-align" id="login-successful">You have successfully logged in</div></figure>
       </div>
     </section>
+    <br />
+    <button id="github-logout">Logout of Github</button>
   </body>
   <script src="UnofficialAZAEventManager.js"></script>
 </html>

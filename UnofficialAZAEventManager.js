@@ -2,42 +2,59 @@ const Github = require("github-api");
 const $ = require('jquery');
 const fs = require('fs');
 
-var github, user, URArepo;
+var github, user, repos, AppRepo;
 
 $("#github-login-form").submit(function() {
 	$("#login-err").text("");
 	$("#login-success").text("");
+
 	var username = $("input[name=\"username\"]").val();
 	var password = $("input[name=\"password\"]").val();
 
 	loginToGithub(username, password);
 
-	getUnofficialRamonAppRepo(user, function(err, repo) {
-		if (err)
+	getUserRepos(user, function(err, repos) {
+		if (err) {
 			if (err == "login_err")
 				$("#login-err").text("Invalid login details");
-			else if (err == "repo_not_found")
-				$("#login-err").text("Become a collaborator for Ramon App");
-			else console.log("BOZO ALERT");
+			// else if (err == "repo_not_found")
+			// 	$("#login-err").text("Become a collaborator for Ramon App");
+		}
 		else {
 			saveUserToFile(username, password);
-			URA = repo;
-			vert_align();
+			this.repos = repos;
+			$("#login-successful").text("Successfully logged into " + username);
 			$("#github-login-container .flippable").addClass("flipped");
+			vert_align();
 		}
 	});
 
 	return false;	// prevents reload
 });
 
-function getUnofficialRamonAppRepo(user, callback) {
+function getUserRepos(user, callback) {
+	user.repos("all", function(err, repos) {
+		if (err)
+			callback("login_err", null);
+		else callback(false, repos);
+	});
+}
+
+function getRepo(url) {
+	for (var i = 0; i < repos.length; i++)
+		if (repos[i].clone_url == url)
+			return repos[i];
+	return null;
+}
+
+function getUserRepo(user, url, callback) {
 	user.repos("all", function(err, repos) {
 		if (err)
 			callback("login_err", null);
 		else {
 			for (var i = 0; i < repos.length; i++)
-				if (repos[i].id = "42672465") {
-					callback(false, repos[i]);
+				if (repos[i].clone_url == url) {
+					callback(false, repos);
 					return;
 				}
 			callback("repo_not_found", null);
@@ -58,40 +75,45 @@ function vert_align() {
 	});
 }
 
-function attempt_login_from_file() {
-	var contents = readTextFile();
-}
-
-function saveUserToFile(username, password) {
+function saveUserToFile(username, password, app_url) {
 	var userDetails = {};
 	userDetails.username = username;
 	userDetails.password = password;
+	if (app_url)
+		userDetails.url = app_url;
 
-	fs.writeFile(__dirname + "/login-info.txt", JSON.stringify(userDetails), function (err) {
-		if (err)
-			console.log(err);
-	});
+	writeToFile("login-info.txt", JSON.stringify(userDetails), console.log());
 }
 
 function loadUserFromFile() {
-	fs.readFile(__dirname + "/login-info.txt", "utf8", function(err, data) {
-		if (!err) {
+	loadFromFile("login-info.txt", function(err, data) {
+		if (!err && data.length > 0) {
 			var userDetails = JSON.parse(data);
 			loginToGithub(userDetails.username, userDetails.password);
 
-			getUnofficialRamonAppRepo(user, function(err, repo) {
-				console.log(err);
-				if (err)
+			if (userDetails.url)
+				getUserRepo(user, userDetails.url, function(err, repo) {
+					if (err) {
+						if (err == "login_err")
+							$("#login-err").text("Login details changed");
+					}
+					else {
+						AppRepo = repo;
+						$("#login-successful").text("Successfully logged in to " + userDetails.username);
+						$("#github-login-container .flippable").addClass("flipped");
+						vert_align();
+					}
+				});
+			else getUserRepos(user, function(err, repos) {
+				if (err) {
 					if (err == "login_err")
 						$("#login-err").text("Login details changed");
-					else if (err == "repo_not_found")
-						$("#login-err").text("Check your Ramon App permissions");
-					else console.log("BOZO ALERT");
+				}
 				else {
-					URA = repo;
-					$("#login-successful").text("Successfully logged in to " + userDetails.username);
-					vert_align();
+					this.repos = repos;
+					$("#login-successful").text("Successfully logged into " + userDetails.username);
 					$("#github-login-container .flippable").addClass("flipped");
+					vert_align();
 				}
 			});
 		}
@@ -105,4 +127,23 @@ function loginToGithub(username, password) {
 	  auth: "basic"
 	});
 	user = github.getUser();
+}
+
+$("#github-logout").click(function() {
+	github = user = repos = null;
+	$("#github-login-container .flippable").removeClass("flipped");
+	writeToFile("login-info.txt", "");
+});
+
+function writeToFile(relative_path, content, callback) {
+	fs.writeFile(__dirname + "/" + relative_path, content, function (err) {
+		if (callback)
+			callback(err);
+	});
+}
+
+function loadFromFile(relative_path, callback) {
+	fs.readFile(__dirname + "/" + relative_path, "utf8", function(err, data) {
+		callback(err, data);
+	});
 }
