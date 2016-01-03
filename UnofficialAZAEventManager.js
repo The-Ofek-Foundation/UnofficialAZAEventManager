@@ -147,3 +147,11 @@ function loadFromFile(relative_path, callback) {
 		callback(err, data);
 	});
 }
+
+$(window).resize(function() {
+	var browser_dimensions = {};
+	browser_dimensions.width = $(window).width();
+	browser_dimensions.height = $(window).height();
+
+	writeToFile("browser-dimensions.txt", JSON.stringify(browser_dimensions));
+});
