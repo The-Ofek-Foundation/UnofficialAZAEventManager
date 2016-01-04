@@ -2,35 +2,52 @@ const Github = require("github-api");
 const $ = require('jquery');
 const fs = require('fs');
 
-var github, user, repos, AppRepo;
+var github = user = repos = FeedRepo = logged_in = false;
 
-$("#github-login-form").submit(function() {
-	$("#login-err").text("");
-	$("#login-success").text("");
+$(document).ready(function() {
+	$("body").css("margin-top", $("#navbar-top").height() + "px");
+	$("#login-dropdown").css("top", $("#navbar-top").height() - $("#login-dropdown").height() + "px").width($("#login-dropdown input").width());
+	$("#logout-dropdown").css("top", $("#navbar-top").height() - $("#logout-dropdown").height() + "px").width($("#logout-dropdown button").width());
 
-	var username = $("input[name=\"username\"]").val();
-	var password = $("input[name=\"password\"]").val();
-
-	loginToGithub(username, password);
-
-	getUserRepos(user, function(err, repos) {
-		if (err) {
-			if (err == "login_err")
-				$("#login-err").text("Invalid login details");
-			// else if (err == "repo_not_found")
-			// 	$("#login-err").text("Become a collaborator for Ramon App");
-		}
-		else {
-			saveUserToFile(username, password);
-			this.repos = repos;
-			$("#login-successful").text("Successfully logged into " + username);
-			$("#github-login-container .flippable").addClass("flipped");
-			vert_align();
+	$("#navbar-top > li a").click(function() {
+		if (!$(this).hasClass('active')) {
+			$("#navbar-top li a").removeClass('active');
+			$(this).addClass("active");
 		}
 	});
 
-	return false;	// prevents reload
+	$("#navbar-top ul li a").click(function() {
+		if (!$(this).hasClass('active')) {
+			$("#navbar-top ul li a").removeClass('active');
+			$(this).addClass("active");
+		}
+	});
+
+	$("a[href=\"#login\"]").click(function() {
+		if (logged_in)
+			toggleLogDropdown($("#logout-dropdown"), !$("#logout-dropdown").data("extended"));
+		else	toggleLogDropdown($("#login-dropdown"), !$("#login-dropdown").data("extended"));
+	});
+
+	vert_align();
 });
+
+function toggleLogDropdown(dropdown, extend) {
+	if (extend) {
+		dropdown.data("extended", true);
+		dropdown.animate({
+			opacity: 1,
+			top: $("#navbar-top").height() + "px"
+		}, "1000");
+	}
+	else {
+		dropdown.data("extended", false);
+		dropdown.animate({
+			opacity: 0,
+			top: $("#navbar-top").height() - dropdown.height() + "px"
+		}, "1000");
+	}
+}
 
 function getUserRepos(user, callback) {
 	user.repos("all", function(err, repos) {
@@ -62,25 +79,18 @@ function getUserRepo(user, url, callback) {
 	});
 }
 
-$(document).ready(function() {
-	$("#github-login-container").height($("#github-login-container .flippable figure").outerHeight(false));
-	$("#github-login-container .flippable figure").css("width", "100%").css("height", "100%");
-	vert_align();
-	loadUserFromFile();
-});
-
 function vert_align() {
 	$('.vert-align').each(function() {
 		$(this).css('margin-top', ($(this).parent().height() - $(this).height()) / 2 + "px");
 	});
 }
 
-function saveUserToFile(username, password, app_url) {
+function saveUserToFile(username, password) {
 	var userDetails = {};
 	userDetails.username = username;
 	userDetails.password = password;
-	if (app_url)
-		userDetails.url = app_url;
+	if (FeedRepo)
+		userDetails.url = FeedRepo.clone_url;
 
 	writeToFile("login-info.txt", JSON.stringify(userDetails), console.log());
 }
@@ -98,10 +108,8 @@ function loadUserFromFile() {
 							$("#login-err").text("Login details changed");
 					}
 					else {
-						AppRepo = repo;
-						$("#login-successful").text("Successfully logged in to " + userDetails.username);
-						$("#github-login-container .flippable").addClass("flipped");
-						vert_align();
+						loginSuccess(userDetails.username);
+						FeedRepo = repo;
 					}
 				});
 			else getUserRepos(user, function(err, repos) {
@@ -110,10 +118,8 @@ function loadUserFromFile() {
 						$("#login-err").text("Login details changed");
 				}
 				else {
+					loginSuccess(userDetails.username);
 					this.repos = repos;
-					$("#login-successful").text("Successfully logged into " + userDetails.username);
-					$("#github-login-container .flippable").addClass("flipped");
-					vert_align();
 				}
 			});
 		}
@@ -129,11 +135,20 @@ function loginToGithub(username, password) {
 	user = github.getUser();
 }
 
-$("#github-logout").click(function() {
-	github = user = repos = null;
-	$("#github-login-container .flippable").removeClass("flipped");
+function logoutOfGithub() {
+	github = user = repos = FeedRepo = logged_in = false;
 	writeToFile("login-info.txt", "");
-});
+	toggleLogDropdown($("#logout-dropdown"), false);
+	$("#log-tab a").text('Login');
+	$("#login-alert").show();
+}
+
+function loginSuccess(username) {
+	logged_in = true;
+	$("#log-tab a").text('Logged in as ' + username);
+	toggleLogDropdown($("#login-dropdown"), false);
+	$("#login-alert").hide();
+}
 
 function writeToFile(relative_path, content, callback) {
 	fs.writeFile(__dirname + "/" + relative_path, content, function (err) {
@@ -155,3 +170,4 @@ $(window).resize(function() {
 
 	writeToFile("browser-dimensions.txt", JSON.stringify(browser_dimensions));
 });
+

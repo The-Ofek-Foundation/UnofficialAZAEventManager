@@ -33,7 +33,10 @@ app.on('ready', function() {
 function createMainWindow() {
   // Create the browser window.
 
-  mainWindow = new BrowserWindow({width: browser_dimensions.width, height: browser_dimensions.height});
+  mainWindow = new BrowserWindow({
+    width: browser_dimensions.width,
+    height: browser_dimensions.height
+  });
 
   // and load the index.html of the app.
   mainWindow.loadURL('file://' + __dirname + '/index.html');
@@ -53,7 +56,6 @@ function createMainWindow() {
 
 function getBrowserDimensions(callback) {
   loadFromFile("browser-dimensions.txt", function(err, data) {
-    console.log(data, err);
     if (err || data.length === 0)
       callback([800, 800]);
     else callback(JSON.parse(data));

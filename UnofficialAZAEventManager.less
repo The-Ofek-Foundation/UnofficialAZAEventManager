@@ -1,5 +1,6 @@
 body {
 	text-align: center;
+	padding-top: 10px;
 }
 
 html {
@@ -7,39 +8,30 @@ html {
 	background-color: lightblue;
 }
 
-#github-login-container {
-	width: 70%;
-	margin: auto;
-	perspective: 800px;
-	position: relative;
+#login-dropdown, #logout-dropdown {
+	position: fixed;
+	right: 0px;
+	top: 0px;
+	width: 30%;
+	z-index: 9;
+	background-color: green;
+	border-bottom: 3px solid blue;
+	border-left: 3px solid blue;
+	border-bottom-left-radius: 25px;
+	text-align: left;
+	padding: 20px;
+	padding-bottom: 10px;
+	opacity: 0;
 
-	.flippable {
-		position: absolute;
-		height: 100%;
-		width: 100%;
-		transform-origin: right center;
-		transform-style: preserve-3d;
-		transition: transform 1s;
-
-		figure {
-			backface-visibility: hidden;
-			display: block;
-			position: absolute;
-			margin: 0px;
-			border: 3px solid blue;
-			border-radius: 25px;
-		}
-
-		.back {
-			text-align: center;
-			color: green;
-			transform: rotateY(180deg);
-		}
-
-		&.flipped {
-			transform: translateX(-100%) rotateY(-180deg);
-		}
+	input {
+		margin-bottom: 10px;
 	}
+}
+
+#logout-dropdown {
+	text-align: center;
+	padding-top: 10px;
+	padding-bottom: 15px;
 }
 
 .inline {
@@ -47,7 +39,6 @@ html {
 	outline: 0px;
 	border: none;
 	border-bottom: 1px solid black;
-	text-align: center;
 	padding-left: 10px;
 	padding-right: 20px;
 
@@ -70,3 +61,55 @@ html {
 #github-login {
 	// Put github login styles here
 }
+
+.navbar {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background-color: #333;
+
+	li {
+		float: left;
+
+		a {
+			display: block;
+			color: white;
+			text-align: center;
+			padding: 14px 16px;
+			text-decoration: none;
+			transition: background-color 1s;
+
+			&:hover {
+				background-color: #111;
+			}
+		}
+	}
+
+	ul {
+		list-style-type: none;
+	}
+
+	> li a.active {
+		background-color: #4CAF50;
+	}
+
+	#login-err {
+		display: block;
+		text-align: center;
+		padding: 14px 16px;
+	}
+}
+
+#navbar-top {
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	z-index: 10;
+
+	ul li a:active {
+		background-color: #9932CD;
+	}
+}
+
