@@ -1,1 +1,0 @@
-{"username":"ofekih","password":"Awesome1","url":"https://github.com/ofekih/AZAAppRSS.git"}

@@ -23,7 +23,7 @@ $("#github-login-form").submit(function() {
 });
 
 $("#repo-name-form").submit(function() {
-	var repo_name = $("input[name=\"rss-repo\"]").val();
+	repo_name = $("input[name=\"rss-repo\"]").val();
 	var file_name = $("input[name=\"rss-file\"]").val();
 	if (file_name.indexOf(".") == -1)
 		file_name += ".txt";

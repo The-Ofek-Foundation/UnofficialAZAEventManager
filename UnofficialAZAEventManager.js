@@ -2,7 +2,7 @@ const Github = require("github-api");
 const $ = require('jquery');
 const fs = require('fs');
 
-var github = user = username = password = repos = FeedRepo = logged_in = false;
+var github = user = username = password = repos = repo_name = FeedRepo = logged_in = false;
 
 $(document).ready(function() {
 	$("body").css("margin-top", $("#navbar-top").height() + "px");
@@ -51,32 +51,16 @@ function toggleLogDropdown(dropdown, extend) {
 
 function getUserRepos(user, callback) {
 	user.repos("all", function(err, repos) {
-		if (err)
+		if (err) {
+			console.log(err);
 			callback("login_err", null);
+		}
 		else callback(false, repos);
 	});
 }
 
-function getRepo(url) {
-	for (var i = 0; i < repos.length; i++)
-		if (repos[i].clone_url == url)
-			return repos[i];
-	return null;
-}
-
-function getUserRepo(user, url, callback) {
-	user.repos("all", function(err, repos) {
-		if (err)
-			callback("login_err", null);
-		else {
-			for (var i = 0; i < repos.length; i++)
-				if (repos[i].clone_url == url) {
-					callback(false, repos[i]);
-					return;
-				}
-			callback("repo_not_found", null);
-		}
-	});
+function getRepo(repo_name) {
+	return github.getRepo(username, repo_name);
 }
 
 function vert_align() {
@@ -89,8 +73,8 @@ function saveUserToFile() {
 	var userDetails = {};
 	userDetails.username = username;
 	userDetails.password = password;
-	if (FeedRepo)
-		userDetails.url = FeedRepo.clone_url;
+	if (FeedRepo && repo_name)
+		userDetails.repo_name = repo_name;
 
 	writeToFile("login-info.txt", JSON.stringify(userDetails), console.log());
 }
@@ -100,30 +84,16 @@ function loadUserFromFile() {
 		if (!err && data.length > 0) {
 			var userDetails = JSON.parse(data);
 			loginToGithub(userDetails.username, userDetails.password);
+			repo_name = userDetails.repo_name;
 
-			if (userDetails.url)
-				getUserRepo(user, userDetails.url, function(err, repo) {
-					if (err) {
-						if (err == "login_err")
-							$("#login-err").text("Login details changed");
-						else if (err == "repo_not_found") {
-							$("#login-err").text("Check access to repo");
-							loginSuccess();
-						}
-					}
-					else {
-						FeedRepo = repo;
-						loginSuccess();
-					}
-				});
-			else getUserRepos(user, function(err, repos) {
+			getUserRepos(user, function(err, repos) {
 				if (err) {
 					if (err == "login_err")
 						$("#login-err").text("Login details changed");
 				}
 				else {
+					FeedRepo = getRepo(repo_name);
 					loginSuccess();
-					this.repos = repos;
 				}
 			});
 		}
@@ -142,7 +112,7 @@ function loginToGithub(username, password) {
 }
 
 function logoutOfGithub() {
-	github = user = username = password = repos = FeedRepo = logged_in = false;
+	github = user = username = password = repos = repo_name = FeedRepo = logged_in = false;
 	writeToFile("login-info.txt", "");
 	toggleLogDropdown($("#logout-dropdown"), false);
 	$("#log-tab a").text('Login');
@@ -159,6 +129,7 @@ function loginSuccess() {
 		opacity: 1,
 		"margin-top": 0
 	}, 1000);
+	console.log(FeedRepo);
 	if (!FeedRepo)
 		$("#create-repo").show();
 }
