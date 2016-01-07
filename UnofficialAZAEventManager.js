@@ -92,7 +92,8 @@ function loadUserFromFile() {
 						$("#login-err").text("Login details changed");
 				}
 				else {
-					FeedRepo = getRepo(repo_name);
+					if (repo_name)
+						FeedRepo = getRepo(repo_name);
 					loginSuccess();
 				}
 			});
