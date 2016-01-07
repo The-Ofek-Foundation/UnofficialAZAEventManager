@@ -130,8 +130,9 @@ function loginSuccess() {
 		opacity: 1,
 		"margin-top": 0
 	}, 1000);
-	if (!FeedRepo)
-		$("#create-repo").show();
+	if (FeedRepo)
+		$("#write-event").show();
+	else $("#create-repo").show();
 }
 
 function writeToFile(relative_path, content, callback) {
@@ -154,3 +155,17 @@ $(window).resize(function() {
 
 	writeToFile("browser-dimensions.txt", JSON.stringify(browser_dimensions));
 });
+
+Date.prototype.toDateInputValue = (function() {
+    var local = new Date(this);
+    local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+    return local.toJSON().slice(0,10);
+});
+
+function StringToXML(oString) {
+	return (new DOMParser()).parseFromString(oString, "text/xml");
+}
+
+function XMLToString(oXML) {
+	return (new XMLSerializer()).serializeToString(oXML).replace(/&amp/g, '&;').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&quot;/g, '"').replace(/&apos;/g, '\'');
+}
