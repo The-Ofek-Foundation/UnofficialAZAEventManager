@@ -13,13 +13,37 @@ $("#github-login-form").submit(function() {
 			// 	$("#login-err").text("Become a collaborator for Ramon App");
 		}
 		else {
-			loginSuccess(username);
-			saveUserToFile(username, password);
+			loginSuccess();
+			saveUserToFile();
 			this.repos = repos;
 		}
 	});
 
 	return false;	// prevents reload
+});
+
+$("#repo-name-form").submit(function() {
+	var repo_name = $("input[name=\"rss-repo\"]").val();
+	var file_name = $("input[name=\"rss-file\"]").val();
+	if (file_name.indexOf(".") == -1)
+		file_name += ".txt";
+
+	user.createRepo({"name": repo_name}, function(err, res) {
+		FeedRepo = res;
+		saveUserToFile();
+		FeedRepo.write("master", file_name, "CONTENTS", "Create RSS File", function(err) {
+			if (err)
+				console.log(err);
+			else {
+				$("#logged-in-div").animate({
+					opacity: 0,
+					"margin-top": "-10px"
+				}, 1000);
+			}
+		});
+	});
+
+	return false;
 });
 
 $(document).ready(function() {

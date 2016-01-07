@@ -2,7 +2,7 @@ const Github = require("github-api");
 const $ = require('jquery');
 const fs = require('fs');
 
-var github = user = repos = FeedRepo = logged_in = false;
+var github = user = username = password = repos = FeedRepo = logged_in = false;
 
 $(document).ready(function() {
 	$("body").css("margin-top", $("#navbar-top").height() + "px");
@@ -71,7 +71,7 @@ function getUserRepo(user, url, callback) {
 		else {
 			for (var i = 0; i < repos.length; i++)
 				if (repos[i].clone_url == url) {
-					callback(false, repos);
+					callback(false, repos[i]);
 					return;
 				}
 			callback("repo_not_found", null);
@@ -85,7 +85,7 @@ function vert_align() {
 	});
 }
 
-function saveUserToFile(username, password) {
+function saveUserToFile() {
 	var userDetails = {};
 	userDetails.username = username;
 	userDetails.password = password;
@@ -106,10 +106,14 @@ function loadUserFromFile() {
 					if (err) {
 						if (err == "login_err")
 							$("#login-err").text("Login details changed");
+						else if (err == "repo_not_found") {
+							$("#login-err").text("Check access to repo");
+							loginSuccess();
+						}
 					}
 					else {
-						loginSuccess(userDetails.username);
 						FeedRepo = repo;
+						loginSuccess();
 					}
 				});
 			else getUserRepos(user, function(err, repos) {
@@ -118,7 +122,7 @@ function loadUserFromFile() {
 						$("#login-err").text("Login details changed");
 				}
 				else {
-					loginSuccess(userDetails.username);
+					loginSuccess();
 					this.repos = repos;
 				}
 			});
@@ -133,21 +137,30 @@ function loginToGithub(username, password) {
 	  auth: "basic"
 	});
 	user = github.getUser();
+	this.username = username;
+	this.password = password;
 }
 
 function logoutOfGithub() {
-	github = user = repos = FeedRepo = logged_in = false;
+	github = user = username = password = repos = FeedRepo = logged_in = false;
 	writeToFile("login-info.txt", "");
 	toggleLogDropdown($("#logout-dropdown"), false);
 	$("#log-tab a").text('Login');
 	$("#login-alert").show();
+	$("#logged-in-div").css("opacity", 0).css("margin-top", "-10px");
 }
 
-function loginSuccess(username) {
+function loginSuccess() {
 	logged_in = true;
 	$("#log-tab a").text('Logged in as ' + username);
 	toggleLogDropdown($("#login-dropdown"), false);
 	$("#login-alert").hide();
+	$("#logged-in-div").animate({
+		opacity: 1,
+		"margin-top": 0
+	}, 1000);
+	if (!FeedRepo)
+		$("#create-repo").show();
 }
 
 function writeToFile(relative_path, content, callback) {
@@ -170,4 +183,3 @@ $(window).resize(function() {
 
 	writeToFile("browser-dimensions.txt", JSON.stringify(browser_dimensions));
 });
-
