@@ -130,7 +130,6 @@ function loginSuccess() {
 		opacity: 1,
 		"margin-top": 0
 	}, 1000);
-	console.log(FeedRepo);
 	if (!FeedRepo)
 		$("#create-repo").show();
 }

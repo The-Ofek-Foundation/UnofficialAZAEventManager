@@ -46,6 +46,25 @@ $("#repo-name-form").submit(function() {
 	return false;
 });
 
+$("#repo-exists-btn").click(function () {
+	repo_name = $("#repo-exists").val();
+	FeedRepo = getRepo(repo_name);
+	$("#login-err").text("");
+	FeedRepo.show(function (err, contents) {
+		if (err)
+			if (err.error == 404)
+				$("#login-err").text("Repo not found");
+			else console.log(err);
+		else {
+			saveUserToFile();
+			$("#logged-in-div").animate({
+				opacity: 0,
+				"margin-top": "-10px"
+			}, 1000);
+		}
+	});
+});
+
 $(document).ready(function() {
 	$("#github-login-container").height($("#github-login-container .flippable figure").outerHeight(false));
 	$("#github-login-container .flippable figure").css("width", "100%").css("height", "100%");
