@@ -31,7 +31,7 @@ $("#repo-name-form").submit(function() {
 	user.createRepo({"name": repo_name}, function(err, res) {
 		FeedRepo = getRepo(repo_name);
 		saveUserToFile();
-		FeedRepo.write("master", file_name, "CONTENTS", "Create RSS File", function(err) {
+		FeedRepo.write("master", file_name, "No events posted yet.", "Created Event Feed", function(err) {
 			if (err)
 				console.log(err);
 			else {
