@@ -1,6 +1,7 @@
 const Github = require("github-api");
 const $ = require('jquery');
 const fs = require('fs');
+const pd = require('pretty-data').pd;
 
 var github = user = username = password = repos = repo_name = FeedRepo = logged_in = false;
 
@@ -119,6 +120,8 @@ function logoutOfGithub() {
 	$("#log-tab a").text('Login');
 	$("#login-alert").show();
 	$("#logged-in-div").css("opacity", 0).css("margin-top", "-10px");
+	$("#write-event").hide();
+	$("#create-repo").hide();
 }
 
 function loginSuccess() {

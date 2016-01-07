@@ -54,30 +54,37 @@ $("#repo-exists-btn").click(function () {
 			else console.log(err);
 		else {
 			saveUserToFile();
-			$("#logged-in-div").animate({
+			$("#create-repo").animate({
 				opacity: 0,
 				"margin-top": "-10px"
+			}, 1000, function () {
+				$(this).hide();
+			});
+			$("#write-event").css('margin-top', "-10px").css('opacity', 0).show();
+			$("#write-event").animate({
+				opacity: 1,
+				"margin-top": "0px"
 			}, 1000);
 		}
 	});
 });
-var feed;
+
 $("#write-event-form").submit(function () {
 	FeedRepo.read('master', 'rss-feed.txt', function (err, contents) {
-		// var feed;
+		var feed;
 		try {
 			$.parseXML(contents);
 			feed = StringToXML(contents);
 		}
 		catch (err) {
-			feed = StringToXML('<?xml version="1.0" encoding="UTF-8" ?><rss version="2.0"><channel></channel></rss>');
+			feed = StringToXML(pd.xml('<?xml version="1.0" encoding="UTF-8" ?><rss version="2.0"><channel></channel></rss>'));
 		}
 		var new_event = feed.createElement("item");
 		var description = getEventDescriptionXML(feed);
 		new_event.appendChild(description);
-		feed.childNodes[0].childNodes[0].appendChild(new_event);
+		feed.childNodes[0].childNodes[1].appendChild(new_event);
 
-		FeedRepo.write("master", "rss-feed.txt", XMLToString(feed), "Update Event Feed", function(err) {
+		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)), "Update Event Feed", function(err) {
 			if (err)
 				console.log(err);
 		});
