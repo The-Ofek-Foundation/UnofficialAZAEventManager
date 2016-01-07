@@ -91,10 +91,10 @@ function getEventDescriptionXML(feed) {
 	var description = feed.createElement("description");
 	var content = "<![CDATA[ " + br;
 
-	content += $("input[name=\"event-date\"]").val() + br;
+	content += dateFormat($("input[name=\"event-date\"]").val()) + br;
 	content += $("input[name=\"event-name\"]").val() + br;
 	content += $("textarea[name=\"event-description\"]").val() + br;
-	content += $("input[name=\"event-time\"]").val() + br;
+	content += timeFormat($("input[name=\"event-time\"]").val()) + br;
 	content += $("input[name=\"event-loc-name\"]").val() + br;
 	content += $("input[name=\"event-bring\"]").val() + br;
 	content += $("input[name=\"event-planners\"]").val() + br;
