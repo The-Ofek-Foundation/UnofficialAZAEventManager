@@ -29,7 +29,7 @@ $("#repo-name-form").submit(function() {
 		file_name += ".txt";
 
 	user.createRepo({"name": repo_name}, function(err, res) {
-		FeedRepo = res;
+		FeedRepo = getRepo(repo_name);
 		saveUserToFile();
 		FeedRepo.write("master", file_name, "CONTENTS", "Create RSS File", function(err) {
 			if (err)
