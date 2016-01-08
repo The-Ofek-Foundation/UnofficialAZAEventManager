@@ -31,13 +31,20 @@ $("#repo-name-form").submit(function() {
 		else {
 			FeedRepo = getRepo(repo_name);
 			saveUserToFile();
-			FeedRepo.write("master", "rss-feed.txt", "No events posted yet.", "Created Event Feed", function(err) {
-				if (err)
-					popupError("Error creating file rss-feed.txt", err);
+			FeedRepo.write("master", "rss-feed.txt", "No events posted yet.", "Created Event Feed", function(create_err) {
+				if (create_err)
+					popupError("Error creating file rss-feed.txt", create_err);
 				else {
-					$("#logged-in-div").animate({
+					$("#create-repo").animate({
 						opacity: 0,
 						"margin-top": "-10px"
+					}, 1000, function () {
+						$(this).hide();
+					});
+					$("#write-event").css('margin-top', "-10px").css('opacity', 0).show();
+					$("#write-event").animate({
+						opacity: 1,
+						"margin-top": "0px"
 					}, 1000);
 				}
 			});

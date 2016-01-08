@@ -83,7 +83,9 @@ function saveUserToFile() {
 
 function loadUserFromFile() {
 	loadFromFile("login-info.txt", function(err, data) {
-		if (!err && data.length > 0) {
+		if (err)
+			console.error("Could not open login-info.txt " + err);
+		else if (data.length > 0) {
 			var userDetails = JSON.parse(data);
 			loginToGithub(userDetails.username, userDetails.password);
 			repo_name = userDetails.repo_name;
@@ -94,12 +96,24 @@ function loadUserFromFile() {
 						$("#login-err").text("Login details changed");
 				}
 				else {
-					if (repo_name)
+					if (repo_name) {
 						FeedRepo = getRepo(repo_name);
-					loginSuccess();
+						FeedRepo.show(function (err, contents) {
+							if (err) {
+								if (err.error == 404)
+									popupError("Repo not found");
+								else popupError("Repo error, contact developer", err);
+								FeedRepo = false;
+								saveUserToFile();
+							}
+							loginSuccess();
+						});
+					}
+					else loginSuccess();
 				}
 			});
 		}
+		else;
 	});
 }
 
@@ -165,10 +179,12 @@ function popupError(err_message, log) {
 	$("#screen-dim").show();
 	$("#error-popup-text").text(err_message);
 	$("#error-popup").show();
-	if (log)
+	if (log) {
 		$("#strange-error").show();
+		console.error(log);
+		$("#strange-error").text(log);
+	}
 	else $("#strange-error").hide();
-	$("#strange-error").text(log);
 	$("#screen-dim").animate({opacity: 0.8}, "1000");
 	$("#error-popup").animate({opacity: 1}, "1000");
 }
