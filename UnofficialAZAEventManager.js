@@ -76,7 +76,7 @@ function vert_align() {
 function saveUserToFile() {
 	var userDetails = {};
 	userDetails.username = username;
-	userDetails.password = cryptr.encrypt(password);
+	userDetails.password = password;
 	if (FeedRepo && repo_name)
 		userDetails.repo_name = repo_name;
 
@@ -127,7 +127,7 @@ function loginToGithub(username, password) {
 	});
 	user = github.getUser();
 	this.username = username;
-	this.password = password;
+	this.password = cryptr.encrypt(password);
 }
 
 function logoutOfGithub() {

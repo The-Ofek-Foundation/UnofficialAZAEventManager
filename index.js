@@ -26,7 +26,7 @@ $("#repo-name-form").submit(function() {
 	user.createRepo({"name": repo_name}, function(err, res) {
 		if (err)
 			if (err.error == 422)
-				$("#login-err").text("Invalid login details");
+				$("#login-err").text("Repo already exists!");
 			else popupError("Error creating repo, contact developer", err);
 		else {
 			FeedRepo = getRepo(repo_name);
