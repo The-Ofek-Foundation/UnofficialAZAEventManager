@@ -53,8 +53,9 @@ function toggleLogDropdown(dropdown, extend) {
 function getUserRepos(user, callback) {
 	user.repos("all", function(err, repos) {
 		if (err) {
-			console.log(err);
-			callback("login_err", null);
+			if (err.error == 401)
+				callback("login_err", null);
+			else popupError("Strange login error, contact developer", err);
 		}
 		else callback(false, repos);
 	});
@@ -157,6 +158,27 @@ $(window).resize(function() {
 	browser_dimensions.height = $(window).height();
 
 	writeToFile("browser-dimensions.txt", JSON.stringify(browser_dimensions));
+});
+
+function popupError(err_message, log) {
+	$("#screen-dim").show();
+	$("#error-popup-text").text(err_message);
+	$("#error-popup").show();
+	if (log)
+		$("#strange-error").show();
+	else $("#strange-error").hide();
+	$("#strange-error").text(log);
+	$("#screen-dim").animate({opacity: 0.8}, "1000");
+	$("#error-popup").animate({opacity: 1}, "1000");
+}
+
+$("#close-error-popup-btn").click(function () {
+	$("#screen-dim").animate({opacity: 0}, "500", function() {
+		$(this).hide();
+	});
+	$("#error-popup").animate({opacity: 0}, "500", function() {
+		$(this).hide();
+	});
 });
 
 function timeFormat(time) {

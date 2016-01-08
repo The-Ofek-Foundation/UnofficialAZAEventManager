@@ -9,8 +9,6 @@ $("#github-login-form").submit(function() {
 		if (err) {
 			if (err == "login_err")
 				$("#login-err").text("Invalid login details");
-			// else if (err == "repo_not_found")
-			// 	$("#login-err").text("Become a collaborator for Ramon App");
 		}
 		else {
 			loginSuccess();
@@ -26,18 +24,24 @@ $("#repo-name-form").submit(function() {
 	repo_name = $("input[name=\"rss-repo\"]").val();
 
 	user.createRepo({"name": repo_name}, function(err, res) {
-		FeedRepo = getRepo(repo_name);
-		saveUserToFile();
-		FeedRepo.write("master", "rss-feed.txt", "No events posted yet.", "Created Event Feed", function(err) {
-			if (err)
-				console.log(err);
-			else {
-				$("#logged-in-div").animate({
-					opacity: 0,
-					"margin-top": "-10px"
-				}, 1000);
-			}
-		});
+		if (err)
+			if (err.error == 422)
+				$("#login-err").text("Invalid login details");
+			else popupError("Error creating repo, contact developer", err);
+		else {
+			FeedRepo = getRepo(repo_name);
+			saveUserToFile();
+			FeedRepo.write("master", "rss-feed.txt", "No events posted yet.", "Created Event Feed", function(err) {
+				if (err)
+					popupError("Error creating file rss-feed.txt", err);
+				else {
+					$("#logged-in-div").animate({
+						opacity: 0,
+						"margin-top": "-10px"
+					}, 1000);
+				}
+			});
+		}
 	});
 
 	return false;
@@ -50,8 +54,8 @@ $("#repo-exists-btn").click(function () {
 	FeedRepo.show(function (err, contents) {
 		if (err)
 			if (err.error == 404)
-				$("#login-err").text("Repo not found");
-			else console.log(err);
+				popupError("Repo not found");
+			else popupError("Repo error, contact developer", err);
 		else {
 			saveUserToFile();
 			$("#create-repo").animate({
@@ -71,6 +75,12 @@ $("#repo-exists-btn").click(function () {
 
 $("#write-event-form").submit(function () {
 	FeedRepo.read('master', 'rss-feed.txt', function (err, contents) {
+		if (err)
+			if (err == "not found") {
+				console.error(err);
+				contents = "bozo alert";
+			}
+		else popupError("Error reading rss-feed.txt, contact developer", err);
 		var feed;
 		try {
 			$.parseXML(contents);
@@ -86,7 +96,10 @@ $("#write-event-form").submit(function () {
 
 		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)), "Update Event Feed", function(err) {
 			if (err)
-				console.log(err);
+				popupError("Error writing to rss-feed.txt", err);
+			else {
+				
+			}
 		});
 	});
 
