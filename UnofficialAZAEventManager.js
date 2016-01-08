@@ -123,6 +123,7 @@ function logoutOfGithub() {
 	$("#logged-in-div").css("opacity", 0).css("margin-top", "-10px");
 	$("#write-event").hide();
 	$("#create-repo").hide();
+	$("#write-event-status").text("");
 }
 
 function loginSuccess() {

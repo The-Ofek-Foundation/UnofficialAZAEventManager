@@ -74,13 +74,14 @@ $("#repo-exists-btn").click(function () {
 });
 
 $("#write-event-form").submit(function () {
+	$("#write-event-status").text("");
 	FeedRepo.read('master', 'rss-feed.txt', function (err, contents) {
 		if (err)
 			if (err == "not found") {
 				console.error(err);
 				contents = "bozo alert";
 			}
-		else popupError("Error reading rss-feed.txt, contact developer", err);
+			else popupError("Error reading rss-feed.txt, contact developer", err);
 		var feed;
 		try {
 			$.parseXML(contents);
@@ -94,11 +95,14 @@ $("#write-event-form").submit(function () {
 		new_event.appendChild(description);
 		feed.childNodes[0].childNodes[1].appendChild(new_event);
 
-		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)), "Update Event Feed", function(err) {
-			if (err)
-				popupError("Error writing to rss-feed.txt", err);
+		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)), "Update Event Feed", function(write_err) {
+			if (write_err)
+				popupError("Error writing to rss-feed.txt", write_err);
 			else {
-				
+				if (err)
+					$("#write-event-status").text("Successfully created new file rss-feed.txt and added event");
+				else $("#write-event-status").text("Successfully added new event");
+				clearEventDescription();
 			}
 		});
 	});
@@ -126,6 +130,15 @@ function getEventDescriptionXML(feed) {
 	description.appendChild(contnode);
 
 	return description;
+}
+
+function clearEventDescription() {
+	$("#write-event-form input").val("");
+	$("#write-event-form textarea").val("");
+
+	$("input[name=\"event-date\"]").val(new Date().toDateInputValue());
+	$("input[name=\"event-time\"]").val("18:00");
+	$("input[type=\"submit\"").val("Add Event");
 }
 
 $(document).ready(function() {

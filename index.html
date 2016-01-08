@@ -18,7 +18,7 @@
       <form id="github-login-form">
         <input type="text" placeholder="YOUR_USERNAME" name="username" required>
         <input type="text" placeholder="YOUR_PASSWORD" name="password" required>
-        <input type="submit" value="Login" id="github-login"> <!--<span id="login-err"></span>-->
+        <input type="submit" value="Login"> <!--<span id="login-err"></span>-->
       </form>
     </div>
     <div id="logout-dropdown">
@@ -32,7 +32,7 @@
         <form id="repo-name-form">
           <h3>Choose a name for your RSS feed repo: <input class="inline" type="text" value="ChapterEventFeedRepo" name="rss-repo" required></h3>
           <div class="text-center">
-            <input type="submit" value="Create" id="submit-repo-details">
+            <input type="submit" value="Create">
           </div>
         </form>
         <br />
@@ -50,8 +50,10 @@
           <h3>Event Location Name: <input class="inline" type="text" name="event-loc-name" placeholder="Abestein's house" required></h3>
           <h3>Google maps location: <input class="inline" type="text" name="event-loc" placeholder="11111 jason house way" required></h3>
           <div class="text-center">
-            <input type="submit" value="Add Event" id="write-event">
+            <input type="submit" value="Add Event">
           </div>
+          <br />
+          <div id="write-event-status"></div>
         </form>
       </div>
     </div>
