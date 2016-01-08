@@ -2,6 +2,8 @@ const Github = require("github-api");
 const $ = require('jquery');
 const fs = require('fs');
 const pd = require('pretty-data').pd;
+const Cryptr = require("cryptr");
+const cryptr = new Cryptr("the-ofek-foundation");
 
 var github = user = username = password = repos = repo_name = FeedRepo = logged_in = false;
 
@@ -74,7 +76,7 @@ function vert_align() {
 function saveUserToFile() {
 	var userDetails = {};
 	userDetails.username = username;
-	userDetails.password = password;
+	userDetails.password = cryptr.encrypt(password);
 	if (FeedRepo && repo_name)
 		userDetails.repo_name = repo_name;
 
@@ -87,7 +89,7 @@ function loadUserFromFile() {
 			console.error("Could not open login-info.txt " + err);
 		else if (data.length > 0) {
 			var userDetails = JSON.parse(data);
-			loginToGithub(userDetails.username, userDetails.password);
+			loginToGithub(userDetails.username, cryptr.decrypt(userDetails.password));
 			repo_name = userDetails.repo_name;
 
 			getUserRepos(user, function(err, repos) {
