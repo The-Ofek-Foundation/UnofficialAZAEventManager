@@ -7,7 +7,6 @@ const cryptr = new Cryptr("the-ofek-foundation");
 var github = user = username = password = repos = repo_name = FeedRepo = logged_in = false;
 
 $(document).ready(function() {
-	$("body").css("margin-top", $("#navbar-top").height() + "px");
 	$("#login-dropdown").css("top", $("#navbar-top").height() - $("#login-dropdown").height() + "px").width($("#login-dropdown input").width());
 	$("#logout-dropdown").css("top", $("#navbar-top").height() - $("#logout-dropdown").height() + "px").width($("#logout-dropdown button").width());
 
@@ -442,7 +441,7 @@ function clearEventDescription() {
 $(document).ready(function() {
 	$("#github-login-container").height($("#github-login-container .flippable figure").outerHeight(false));
 	$("#github-login-container .flippable figure").css("width", "100%").css("height", "100%");
-	// loadUserFromFile();
+	loadUserFromFile();
 	$("input[name=\"event-date\"]").val(new Date().toDateInputValue());
 });
 
