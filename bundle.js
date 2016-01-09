@@ -69,6 +69,26 @@ function getRepo(repo_name) {
 	return github.getRepo(username, repo_name);
 }
 
+function getFeed(callback) {
+	FeedRepo.read('master', 'rss-feed.txt', function (err, contents) {
+		if (err)
+			if (err == "not found") {
+				console.error(err);
+				contents = "bozo alert";
+			}
+			else popupError("Error reading rss-feed.txt, contact developer", err);
+		var feed;
+		try {
+			$.parseXML(contents);
+			feed = StringToXML(contents);
+		}
+		catch (err) {
+			feed = StringToXML(pd.xml('<?xml version="1.0" encoding="UTF-8" ?><rss version="2.0"><channel></channel></rss>'));
+		}
+		callback(err, feed);
+	});
+}
+
 function vert_align() {
 	$('.vert-align').each(function() {
 		$(this).css('margin-top', ($(this).parent().height() - $(this).height()) / 2 + "px");
@@ -161,7 +181,7 @@ function loginSuccess() {
 function fullLoginSuccess() {
 	$(".navbar > li a").removeAttr('disabled');
 	$(".login-only").show();
-	console.log("heya");
+	switch_page(window.location.hash);
 }
 
 function popupError(err_message, log) {
@@ -188,6 +208,8 @@ $("#close-error-popup-btn").click(function () {
 });
 
 function switch_page(id) {
+	if ($("#navbar-top > li a[href=\"" + id + "\"]").length === 0)
+		return;
 	$("#navbar-top li a").removeClass('active');
 	$("a[href=\"" + id + "\"]").addClass("active");
 	$(".page").removeClass("active");
@@ -272,21 +294,7 @@ $("#repo-exists-btn").click(function () {
 
 $("#write-event-form").submit(function () {
 	$("#write-event-status").text("");
-	FeedRepo.read('master', 'rss-feed.txt', function (err, contents) {
-		if (err)
-			if (err == "not found") {
-				console.error(err);
-				contents = "bozo alert";
-			}
-			else popupError("Error reading rss-feed.txt, contact developer", err);
-		var feed;
-		try {
-			$.parseXML(contents);
-			feed = StringToXML(contents);
-		}
-		catch (err) {
-			feed = StringToXML(pd.xml('<?xml version="1.0" encoding="UTF-8" ?><rss version="2.0"><channel></channel></rss>'));
-		}
+	getFeed(function (err, feed) {
 		var new_event = feed.createElement("item");
 		var description = getEventDescriptionXML(feed);
 		new_event.appendChild(description);
