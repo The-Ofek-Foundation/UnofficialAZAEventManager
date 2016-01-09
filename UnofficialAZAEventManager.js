@@ -1,6 +1,6 @@
 const Github = require("github-api");
 const $ = require('jquery');
-const fs = require('fs');
+// const fs = require('fs');
 const pd = require('pretty-data').pd;
 const Cryptr = require("cryptr");
 const cryptr = new Cryptr("the-ofek-foundation");
@@ -80,7 +80,7 @@ function saveUserToFile() {
 	if (FeedRepo && repo_name)
 		userDetails.repo_name = repo_name;
 
-	writeToFile("login-info.txt", JSON.stringify(userDetails), console.log());
+	// writeToFile("login-info.txt", JSON.stringify(userDetails), console.log());
 }
 
 function loadUserFromFile() {
@@ -132,7 +132,7 @@ function loginToGithub(username, password) {
 
 function logoutOfGithub() {
 	github = user = username = password = repos = repo_name = FeedRepo = logged_in = false;
-	writeToFile("login-info.txt", "");
+	// writeToFile("login-info.txt", "");
 	toggleLogDropdown($("#logout-dropdown"), false);
 	$("#log-tab a").text('Login');
 	$("#login-alert").show();
@@ -174,7 +174,7 @@ $(window).resize(function() {
 	browser_dimensions.width = $(window).width();
 	browser_dimensions.height = $(window).height();
 
-	writeToFile("browser-dimensions.txt", JSON.stringify(browser_dimensions));
+	// writeToFile("browser-dimensions.txt", JSON.stringify(browser_dimensions));
 });
 
 function popupError(err_message, log) {

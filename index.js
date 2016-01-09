@@ -151,7 +151,7 @@ function clearEventDescription() {
 $(document).ready(function() {
 	$("#github-login-container").height($("#github-login-container .flippable figure").outerHeight(false));
 	$("#github-login-container .flippable figure").css("width", "100%").css("height", "100%");
-	loadUserFromFile();
+	// loadUserFromFile();
 	$("input[name=\"event-date\"]").val(new Date().toDateInputValue());
 });
 
