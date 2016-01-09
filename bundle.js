@@ -84,7 +84,7 @@ function saveUserToFile() {
 
 function loadUserFromFile() {
 	var data = getCookie("login-info");
-	if (!userDetails);
+	if (!data);
 	else if (data.length > 0) {
 		var userDetails = JSON.parse(data);
 		loginToGithub(userDetails.username, cryptr.decrypt(userDetails.password));
