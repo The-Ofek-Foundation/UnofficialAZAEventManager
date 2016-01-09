@@ -79,44 +79,42 @@ function saveUserToFile() {
 	if (FeedRepo && repo_name)
 		userDetails.repo_name = repo_name;
 
-	// writeToFile("login-info.txt", JSON.stringify(userDetails), console.log());
+	setCookie("login-info", JSON.stringify(userDetails), 21);
 }
 
-// function loadUserFromFile() {
-// 	loadFromFile("login-info.txt", function(err, data) {
-// 		if (err)
-// 			console.error("Could not open login-info.txt " + err);
-// 		else if (data.length > 0) {
-// 			var userDetails = JSON.parse(data);
-// 			loginToGithub(userDetails.username, cryptr.decrypt(userDetails.password));
-// 			repo_name = userDetails.repo_name;
+function loadUserFromFile() {
+	var data = getCookie("login-info");
+	if (!userDetails)
+		console.error("Could not open login-info.txt " + err);
+	else if (data.length > 0) {
+		var userDetails = JSON.parse(data);
+		loginToGithub(userDetails.username, cryptr.decrypt(userDetails.password));
+		repo_name = userDetails.repo_name;
 
-// 			getUserRepos(user, function(err, repos) {
-// 				if (err) {
-// 					if (err == "login_err")
-// 						$("#login-err").text("Login details changed");
-// 				}
-// 				else {
-// 					if (repo_name) {
-// 						FeedRepo = getRepo(repo_name);
-// 						FeedRepo.show(function (err, contents) {
-// 							if (err) {
-// 								if (err.error == 404)
-// 									popupError("Repo not found");
-// 								else popupError("Repo error, contact developer", err);
-// 								FeedRepo = false;
-// 								saveUserToFile();
-// 							}
-// 							loginSuccess();
-// 						});
-// 					}
-// 					else loginSuccess();
-// 				}
-// 			});
-// 		}
-// 		else;
-// 	});
-// }
+		getUserRepos(user, function(err, repos) {
+			if (err) {
+				if (err == "login_err")
+					$("#login-err").text("Login details changed");
+			}
+			else {
+				if (repo_name) {
+					FeedRepo = getRepo(repo_name);
+					FeedRepo.show(function (err, contents) {
+						if (err) {
+							if (err.error == 404)
+								popupError("Repo not found");
+							else popupError("Repo error, contact developer", err);
+							FeedRepo = false;
+							saveUserToFile();
+						}
+						loginSuccess();
+					});
+				}
+				else loginSuccess();
+			}
+		});
+	}
+}
 
 function loginToGithub(username, password) {
 	github = new Github({
@@ -131,7 +129,7 @@ function loginToGithub(username, password) {
 
 function logoutOfGithub() {
 	github = user = username = password = repos = repo_name = FeedRepo = logged_in = false;
-	// writeToFile("login-info.txt", "");
+	setCookie("login-info", "", 0);
 	toggleLogDropdown($("#logout-dropdown"), false);
 	$("#log-tab a").text('Login');
 	$("#login-alert").show();
@@ -154,27 +152,6 @@ function loginSuccess() {
 		$("#write-event").show();
 	else $("#create-repo").show();
 }
-
-// function writeToFile(relative_path, content, callback) {
-// 	fs.writeFile(__dirname + "/" + relative_path, content, function (err) {
-// 		if (callback)
-// 			callback(err);
-// 	});
-// }
-
-// function loadFromFile(relative_path, callback) {
-// 	fs.readFile(__dirname + "/" + relative_path, "utf8", function(err, data) {
-// 		callback(err, data);
-// 	});
-// }
-
-$(window).resize(function() {
-	var browser_dimensions = {};
-	browser_dimensions.width = $(window).width();
-	browser_dimensions.height = $(window).height();
-
-	// writeToFile("browser-dimensions.txt", JSON.stringify(browser_dimensions));
-});
 
 function popupError(err_message, log) {
 	$("#screen-dim").show();
@@ -289,6 +266,28 @@ function StringToXML(oString) {
 function XMLToString(oXML) {
 	return (new XMLSerializer()).serializeToString(oXML).replace(/&amp/g, '&;').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&quot;/g, '"').replace(/&apos;/g, '\'');
 }
+
+function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires="+d.toUTCString();
+    document.cookie = cname + "=" + cvalue + "; " + expires;
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0; i<ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1);
+        if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
+    }
+    return "";
+}
+
+
+
+/** Here starts index.html **/
 
 $("#github-login-form").submit(function() {
 	$("#login-err").text("");
