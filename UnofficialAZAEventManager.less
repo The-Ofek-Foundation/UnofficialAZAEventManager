@@ -1,9 +1,3 @@
-body {
-	text-align: center;
-	padding: 10px 50px;
-	margin-top: 3em;
-}
-
 html {
 	margin: 0px;
 	background-color: lightblue;
@@ -165,4 +159,15 @@ input {
 #write-event-status {
 	color: green;
 	font-weight: bold;
+}
+
+.page {
+	text-align: center;
+	padding: 10px 50px;
+	margin-top: 3em;
+	display: none;
+
+	&.active {
+		display: block;
+	}
 }

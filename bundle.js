@@ -11,10 +11,13 @@ $(document).ready(function() {
 	$("#login-dropdown").css("top", $("#navbar-top").height() - $("#login-dropdown").height() + "px").width($("#login-dropdown input").width());
 	$("#logout-dropdown").css("top", $("#navbar-top").height() - $("#logout-dropdown").height() + "px").width($("#logout-dropdown button").width());
 
-	$("#navbar-top > li a").click(function() {
+	$("#navbar-top > li a").click(function(e) {
 		if (!$(this).hasClass('active')) {
-			$("#navbar-top li a").removeClass('active');
-			$(this).addClass("active");
+			if ($(this).attr("disabled")) {
+				e.preventDefault();
+				return;
+			}
+			switch_page($(this).attr("href"));
 		}
 	});
 
@@ -131,25 +134,34 @@ function logoutOfGithub() {
 	setCookie("login-info", "", 0);
 	toggleLogDropdown($("#logout-dropdown"), false);
 	$("#log-tab a").text('Login');
-	$("#login-alert").show();
+	$(".login-alert").show();
 	$("#logged-in-div").css("opacity", 0).css("margin-top", "-10px");
-	$("#write-event").hide();
 	$("#create-repo").hide();
 	$("#write-event-status").text("");
+	$(".navbar > li a").attr("disabled", true);
+	$("a[href=\"#setup\"]").removeAttr("disabled");
+	$(".login-only").hide();
+	switch_page("#setup");
 }
 
 function loginSuccess() {
 	logged_in = true;
 	$("#log-tab a").text('Logged in as ' + username);
 	toggleLogDropdown($("#login-dropdown"), false);
-	$("#login-alert").hide();
+	$(".login-alert").hide();
 	$("#logged-in-div").animate({
 		opacity: 1,
 		"margin-top": 0
 	}, 1000);
 	if (FeedRepo)
-		$("#write-event").show();
+		fullLoginSuccess();
 	else $("#create-repo").show();
+}
+
+function fullLoginSuccess() {
+	$(".navbar > li a").removeAttr('disabled');
+	$(".login-only").show();
+	console.log("heya");
 }
 
 function popupError(err_message, log) {
@@ -175,116 +187,12 @@ $("#close-error-popup-btn").click(function () {
 	});
 });
 
-function timeFormat(time) {
-	var first = parseInt(time.substring(0, time.indexOf(':')));
-	var second = time.substring(time.indexOf(':'));
-
-	if (first > 12)
-		return (first - 12) + second + " PM";
-	return first + second + " AM";
+function switch_page(id) {
+	$("#navbar-top li a").removeClass('active');
+	$("a[href=\"" + id + "\"]").addClass("active");
+	$(".page").removeClass("active");
+	$(".page" + id).addClass('active');
 }
-
-function dateFormat(d) {
-	var date = new Date(d.replace(/-/g, ','));
-	var dateString = "";
-
-	switch (date.getDay()) {
-		case 0:
-			dateString += "Sunday"; break;
-		case 1:
-			dateString += "Monday"; break;
-		case 2:
-			dateString += "Tuesday"; break;
-		case 3:
-			dateString += "Wednesday"; break;
-		case 4:
-			dateString += "Thursday"; break;
-		case 5:
-			dateString += "Friday"; break;
-		case 6:
-			dateString += "Saturday"; break;
-	}
-
-	dateString += ", ";
-
-	switch (date.getMonth()) {
-		case 0:
-			dateString += "January"; break;
-		case 1:
-			dateString += "February"; break;
-		case 2:
-			dateString += "March"; break;
-		case 3:
-			dateString += "April"; break;
-		case 4:
-			dateString += "May"; break;
-		case 5:
-			dateString += "June"; break;
-		case 6:
-			dateString += "July"; break;
-		case 7:
-			dateString += "August"; break;
-		case 8:
-			dateString += "September"; break;
-		case 9:
-			dateString += "October"; break;
-		case 10:
-			dateString += "November"; break;
-		case 11:
-			dateString += "December"; break;
-	}
-
-	dateString += " " + date.getDate();
-
-	switch (date.getDate()) {
-		case 1: case 21: case 31:
-			dateString += "st"; break;
-		case 2: case 22:
-			dateString += "nd"; break;
-		case 3: case 23:
-			dateString += "rd"; break;
-		default:
-			dateString += "th";
-	}
-
-	dateString += " " + date.getFullYear();
-
-	return dateString;
-}
-
-Date.prototype.toDateInputValue = (function() {
-    var local = new Date(this);
-    local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
-    return local.toJSON().slice(0,10);
-});
-
-function StringToXML(oString) {
-	return (new DOMParser()).parseFromString(oString, "text/xml");
-}
-
-function XMLToString(oXML) {
-	return (new XMLSerializer()).serializeToString(oXML).replace(/&amp/g, '&;').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&quot;/g, '"').replace(/&apos;/g, '\'');
-}
-
-function setCookie(cname, cvalue, exdays) {
-    var d = new Date();
-    d.setTime(d.getTime() + (exdays*24*60*60*1000));
-    var expires = "expires="+d.toUTCString();
-    document.cookie = cname + "=" + cvalue + "; " + expires;
-}
-
-function getCookie(cname) {
-    var name = cname + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0; i<ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1);
-        if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
-    }
-    return "";
-}
-
-
 
 /** Here starts index.html **/
 
@@ -331,11 +239,7 @@ $("#repo-name-form").submit(function() {
 					}, 1000, function () {
 						$(this).hide();
 					});
-					$("#write-event").css('margin-top', "-10px").css('opacity', 0).show();
-					$("#write-event").animate({
-						opacity: 1,
-						"margin-top": "0px"
-					}, 1000);
+					fullLoginSuccess();
 				}
 			});
 		}
@@ -360,12 +264,8 @@ $("#repo-exists-btn").click(function () {
 				"margin-top": "-10px"
 			}, 1000, function () {
 				$(this).hide();
+				fullLoginSuccess();
 			});
-			$("#write-event").css('margin-top', "-10px").css('opacity', 0).show();
-			$("#write-event").animate({
-				opacity: 1,
-				"margin-top": "0px"
-			}, 1000);
 		}
 	});
 });
