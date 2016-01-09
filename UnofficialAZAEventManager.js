@@ -160,7 +160,7 @@ function loginSuccess() {
 function fullLoginSuccess() {
 	$(".navbar > li a").removeAttr('disabled');
 	$(".login-only").show();
-	console.log("heya");
+	switch_page(window.location.hash);
 }
 
 function popupError(err_message, log) {
