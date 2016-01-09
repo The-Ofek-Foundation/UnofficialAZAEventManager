@@ -56,8 +56,8 @@
         <h3>Event Time: <input class="inline" type="time" name="event-time" value="18:00" required></h3>
         <h3>What to bring: <input class="inline" type="text" name="event-bring" value="money for event" required></h3>
         <h3>Event planner/s: <input class="inline" type="text" name="event-planners" placeholder="Abestein" required></h3>
-        <h3>Event Location Name: <input class="inline" type="text" name="event-loc-name" placeholder="Abestein's house" required></h3>
-        <h3>Google maps location: <input class="inline" type="text" name="event-loc" placeholder="11111 jason house way" required></h3>
+        <h3>Event Location Name: <input class="inline" type="text" name="event-location_name" placeholder="Abestein's house" required></h3>
+        <h3>Google maps location: <input class="inline" type="text" name="event-location" placeholder="11111 jason house way" required></h3>
         <div class="text-center">
           <input type="submit" value="Add Event">
         </div>
@@ -67,6 +67,7 @@
     </div>
     <div class="page" id="manage-events">
       <h1>Start managing events!</h1>
+      <div id="event-list-table-div"></div>
     </div>
     <div id="screen-dim" style="display: none;"></div>
     <div id="error-popup" style="display: none;">
@@ -76,4 +77,5 @@
     </div>
   </body>
   <script type="text/javascript" src="bundle.js"></script>
+  <!--<script type="text/javascript" src="UnofficialAZAEventManager.js"></script>-->
 </html>

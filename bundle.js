@@ -4,6 +4,7 @@ const $ = require('jquery');
 const pd = require('pretty-data').pd;
 const Cryptr = require("cryptr");
 const cryptr = new Cryptr("the-ofek-foundation");
+const event_attributes = ["date", "name", "description", "time", "location_name", "bring", "planners", "location"];
 
 var github = user = username = password = repos = repo_name = FeedRepo = logged_in = false;
 
@@ -77,15 +78,83 @@ function getFeed(callback) {
 				contents = "bozo alert";
 			}
 			else popupError("Error reading rss-feed.txt, contact developer", err);
+		callback(err, contents);
+	});
+}
+
+function getFeedEvents(feed) {
+	var items = feed.getElementsByTagName("item");
+	var events = {};
+
+	for (var i = 0; i < items.length; i++) {
+		var event_details = getEventDetails(items[i].getElementsByTagName("description")[0].childNodes[1].data);
+		events[event_details.name] = event_details;
+	}
+
+	return events;
+}
+
+function update_event_list_table() {
+	getFeed(function (err, contents) {
+		var feed;
+		$("#event-list-table-div").children().remove();
+		$("#event-list-table-div").text("");
+		try {
+			$.parseXML(contents);
+			feed = StringToXML(contents);
+		}
+		catch (err) {
+			$("#event-list-table-div").text(contents);
+			return;
+		}
+		var events = getFeedEvents(feed);
+		var table = $("<table></table>").addClass("left-align");
+		for (var event_name in events) {
+			var row = $("<tr></tr>");
+			var cols = new Array(3);
+			cols[0] = $("<td></td>").text(event_name);
+			var delete_button = $("<button></button>").data("event-name", event_name).text("Delete").click(function () {
+				delete_event($(this).data("event-name"));
+			});
+			cols[1] = $("<td></td>").append(delete_button);
+			var edit_button = $("<button></button>").text("Edit").data("event_name", event_name).data("event_details", JSON.stringify(events[event_name]));
+			cols[2] = $("<td></td>").append(edit_button);
+
+			for (var i = 0; i < cols.length; i++)
+				row.append(cols[i]);
+			table.append(row);
+		}
+		$("#event-list-table-div").append(table);
+	});
+}
+
+function delete_event(name) {
+	getFeed(function (err, contents) {
 		var feed;
 		try {
 			$.parseXML(contents);
 			feed = StringToXML(contents);
 		}
 		catch (err) {
-			feed = StringToXML(pd.xml('<?xml version="1.0" encoding="UTF-8" ?><rss version="2.0"><channel></channel></rss>'));
+			popupError("rss-feed.txt changed");
+			update_event_list_table();
+			return;
 		}
-		callback(err, feed);
+		var items = feed.getElementsByTagName("item");
+
+		for (var i = 0; i < items.length; i++)
+			if (getEventDetails(items[i].getElementsByTagName("description")[0].childNodes[1].data).name === name) {
+				items[i].parentNode.removeChild(items[i]);
+				break;
+			}
+
+		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)), "Update Event Feed", function(write_err) {
+			if (write_err)
+				popupError("Error writing to rss-feed.txt", write_err);
+			else {
+				update_event_list_table();
+			}
+		});
 	});
 }
 
@@ -181,6 +250,7 @@ function loginSuccess() {
 function fullLoginSuccess() {
 	$(".navbar > li a").removeAttr('disabled');
 	$(".login-only").show();
+	update_event_list_table();
 	switch_page(window.location.hash);
 }
 
@@ -294,11 +364,28 @@ $("#repo-exists-btn").click(function () {
 
 $("#write-event-form").submit(function () {
 	$("#write-event-status").text("");
-	getFeed(function (err, feed) {
+	getFeed(function (err, contents) {
+		$("#login-err").text("");
+		var feed;
+		try {
+			$.parseXML(contents);
+			feed = StringToXML(contents);
+		}
+		catch (err) {
+			feed = StringToXML(pd.xml('<?xml version="1.0" encoding="UTF-8" ?><rss version="2.0"><channel></channel></rss>'));
+		}
+
+		var events = getFeedEvents(feed);
+		if (events[$("input[name=\"event-name\"]").val()]) {
+			$("#login-err").text("Event with name already exists!");
+			update_event_list_table();
+			return;
+		}
+
 		var new_event = feed.createElement("item");
 		var description = getEventDescriptionXML(feed);
 		new_event.appendChild(description);
-		feed.childNodes[0].childNodes[1].appendChild(new_event);
+		feed.getElementsByTagName("channel")[0].appendChild(new_event);
 
 		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)), "Update Event Feed", function(write_err) {
 			if (write_err)
@@ -308,6 +395,7 @@ $("#write-event-form").submit(function () {
 					$("#write-event-status").text("Successfully created new file rss-feed.txt and added event");
 				else $("#write-event-status").text("Successfully added new event");
 				clearEventDescription();
+				update_event_list_table();
 			}
 		});
 	});
@@ -320,14 +408,22 @@ function getEventDescriptionXML(feed) {
 	var description = feed.createElement("description");
 	var content = "<![CDATA[ " + br;
 
-	content += dateFormat($("input[name=\"event-date\"]").val()) + br;
-	content += $("input[name=\"event-name\"]").val() + br;
-	content += $("textarea[name=\"event-description\"]").val() + br;
-	content += timeFormat($("input[name=\"event-time\"]").val()) + br;
-	content += $("input[name=\"event-loc-name\"]").val() + br;
-	content += $("input[name=\"event-bring\"]").val() + br;
-	content += $("input[name=\"event-planners\"]").val() + br;
-	content += $("input[name=\"event-loc\"]").val() + br;
+	for (var i = 0; i < event_attributes.length; i++) {
+		switch (event_attributes[i]) {
+			case "date":
+				content += dateFormat($("input[name=\"event-" + event_attributes[i] + "\"]").val());
+				break;
+			case "time":
+				content += timeFormat($("input[name=\"event-" + event_attributes[i] + "\"]").val());
+				break;
+			case "description":
+				content += $("textarea[name=\"event-" + event_attributes[i] + "\"]").val();
+				break;
+			default:
+				content += $("input[name=\"event-" + event_attributes[i] + "\"]").val();
+		}
+		content += br;
+	}
 
 	content += "]]>";
 	var contnode = feed.createTextNode(content);
@@ -335,6 +431,16 @@ function getEventDescriptionXML(feed) {
 	description.appendChild(contnode);
 
 	return description;
+}
+
+function getEventDetails(description) {
+	var ev = {};
+	for (var i = 0; i < event_attributes.length; i++) {
+		description = description.substring(description.indexOf(">") + 1);
+		var attribute = description.substring(1, description.indexOf("<") - 1);
+		ev[event_attributes[i]] = attribute;
+	}
+	return ev;
 }
 
 function clearEventDescription() {
