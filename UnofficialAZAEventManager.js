@@ -82,6 +82,12 @@ function getFeed(callback) {
 	});
 }
 
+function getFile(file, callback) {
+	FeedRepo.read('master', file, function (err, contents) {
+		callback(err, contents);
+	});
+}
+
 function getFeedEvents(feed) {
 	var items = feed.getElementsByTagName("item");
 	var events = {};
@@ -104,12 +110,15 @@ function update_event_list_table() {
 			feed = StringToXML(contents);
 		}
 		catch (err) {
-			$("#event-list-table-div").text(contents);
+			$("#event-list-table-div").text("No events posted.");
 			return;
 		}
 		var events = getFeedEvents(feed);
+
+		var zero_events = true;
 		var table = $("<table></table>");
 		for (var event_name in events) {
+			zero_events = false;
 			var row = $("<tr></tr>");
 			var cols = new Array(2);
 			cols[0] = $("<td></td>").text(event_name + " - " + dateMinimize(events[event_name].date));
@@ -125,7 +134,9 @@ function update_event_list_table() {
 				row.append(cols[i]);
 			table.append(row);
 		}
-		$("#event-list-table-div").append(table);
+		if (zero_events)
+			$("#event-list-table-div").text("No events posted.");
+		else $("#event-list-table-div").append(table);
 	});
 }
 
@@ -506,6 +517,54 @@ function clearEventDescription() {
 	$("input[name=\"event-bring\"]").val("money for event");
 	$("input[type=\"submit\"").val("Add Event");
 }
+
+$("#archive-oldies").click(function () {
+	$("#num-archived").text("");
+	getFeed(function (err, contents) {
+		var feed;
+		try {
+			$.parseXML(contents);
+			feed = StringToXML(contents);
+		}
+		catch (err) {
+			popupError("rss-feed.txt changed");
+			update_event_list_table();
+			return;
+		}
+		var items = feed.getElementsByTagName("item");
+		var archive_string = "";
+		var num_archived = 0;
+		var yesterday = new Date();
+		yesterday.setDate(yesterday.getDate() - 1);
+
+		for (var i = 0; i < items.length; i++) {
+			var event = getEventDetails(items[i].getElementsByTagName("description")[0].childNodes[1].data);
+			if (stringToDate(event.date) < yesterday) {
+				archive_string += archiveFormat(event) + "\n";
+				items[i].parentNode.removeChild(items[i]);
+				num_archived++;
+			}
+		}
+
+		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)), "Update Event Feed", function(write_err) {
+			if (write_err)
+				popupError("Files already deleted/archived", write_err);
+			else update_event_list_table();
+		});
+
+		getFile("archive.csv", function (archive_err, archive_contents) {
+			if (!archive_contents)
+				archive_contents = "";
+			FeedRepo.write("master", "archive.csv", archive_contents + archive_string, "Archive " + new Date().toString(), function (archiving_err) {
+				if (archiving_err)
+					popupError("Error archiving, contact developer", archiving_err);
+				if (num_archived === 1)
+					$("#num-archived").text("1 event archived");
+				else $("#num-archived").text(num_archived + " events archived");
+			});
+		});
+	});
+});
 
 $(document).ready(function() {
 	$("#github-login-container").height($("#github-login-container .flippable figure").outerHeight(false));

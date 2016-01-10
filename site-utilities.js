@@ -19,70 +19,81 @@ function timeUnformat(time) {
 
 function dateFormat(d) {
 	var date = new Date(d.replace(/-/g, ','));
-	var dateString = "";
 
+	return getDay(date) + ", " + getMonth(date) + " " + date.getDate() + " " + getYear(date);
+}
+
+function archiveFormat(event) {
+	return archiveDate(event.date) + "," + event.name + "," + event.planners + "," + event.description + "," + event.location_name;
+}
+
+function getDay(date) {
 	switch (date.getDay()) {
 		case 0:
-			dateString += "Sunday"; break;
+			return "Sunday";
 		case 1:
-			dateString += "Monday"; break;
+			return "Monday";
 		case 2:
-			dateString += "Tuesday"; break;
+			return "Tuesday";
 		case 3:
-			dateString += "Wednesday"; break;
+			return "Wednesday";
 		case 4:
-			dateString += "Thursday"; break;
+			return "Thursday";
 		case 5:
-			dateString += "Friday"; break;
+			return "Friday";
 		case 6:
-			dateString += "Saturday"; break;
+			return "Saturday";
+		default:
+			return "BOZO day";
 	}
+}
 
-	dateString += ", ";
-
+function getMonth(date) {
 	switch (date.getMonth()) {
 		case 0:
-			dateString += "January"; break;
+			return "January";
 		case 1:
-			dateString += "February"; break;
+			return "February";
 		case 2:
-			dateString += "March"; break;
+			return "March";
 		case 3:
-			dateString += "April"; break;
+			return "April";
 		case 4:
-			dateString += "May"; break;
+			return "May";
 		case 5:
-			dateString += "June"; break;
+			return "June";
 		case 6:
-			dateString += "July"; break;
+			return "July";
 		case 7:
-			dateString += "August"; break;
+			return "August";
 		case 8:
-			dateString += "September"; break;
+			return "September";
 		case 9:
-			dateString += "October"; break;
+			return "October";
 		case 10:
-			dateString += "November"; break;
+			return "November";
 		case 11:
-			dateString += "December"; break;
+			return "December";
+		default:
+			return "Bozo month";
 	}
+}
 
-	dateString += " " + date.getDate();
-
+function getDate(date) {
 	switch (date.getDate()) {
 		case 1: case 21: case 31:
-			dateString += "st"; break;
+			return date.getDate() + "st";
 		case 2: case 22:
-			dateString += "nd"; break;
+			return date.getDate() + "nd";
 		case 3: case 23:
-			dateString += "rd"; break;
+			return date.getDate() + "rd";
 		default:
-			dateString += "th";
+			return date.getDate() + "th";
 	}
+}
 
-	dateString += " " + date.getFullYear();
-
-	return dateString;
+function getYear(date) {
+	return date.getFullYear();
 }
 
 function dateUnformat(dateString) {
@@ -91,10 +102,22 @@ function dateUnformat(dateString) {
 	var month = dateString.substring(0, dateString.indexOf(" "));
 	dateString = dateString.substring(dateString.indexOf(" ") + 1);
 
-	var day = dateString.substring(0, dateString.indexOf(" ") - 2);
+	var day = dateString.substring(0, dateString.indexOf(" "));
 	dateString = dateString.substring(dateString.indexOf(" ") + 1);
 
 	return new Date(dateString + "," + month + "," + day).toDateInputValue();
+}
+
+function stringToDate(dateString) {
+	dateString = dateString.substring(dateString.indexOf(" ") + 1); // remove day of week
+
+	var month = dateString.substring(0, dateString.indexOf(" "));
+	dateString = dateString.substring(dateString.indexOf(" ") + 1);
+
+	var day = dateString.substring(0, dateString.indexOf(" "));
+	dateString = dateString.substring(dateString.indexOf(" ") + 1);
+
+	return new Date(dateString + "," + month + "," + day);
 }
 
 function dateMinimize(dateString) {
@@ -106,7 +129,23 @@ function dateMinimize(dateString) {
 	var day = dateString.substring(0, dateString.indexOf(" "));
 	dateString = dateString.substring(dateString.indexOf(" ") + 1);
 
-	return month + " " + day;
+	var date = new Date(dateString + "," + month + "," + day);
+
+	return getMonth(date) + " " + getDate(date);
+}
+
+function archiveDate(dateString) {
+	dateString = dateString.substring(dateString.indexOf(" ") + 1); // remove day of week
+
+	var month = dateString.substring(0, dateString.indexOf(" "));
+	dateString = dateString.substring(dateString.indexOf(" ") + 1);
+
+	var day = dateString.substring(0, dateString.indexOf(" "));
+	dateString = dateString.substring(dateString.indexOf(" ") + 1);
+
+	var date = new Date(dateString + "," + month + "," + day);
+
+	return getMonth(date) + " " + getDate(date) + " " + getYear(date);
 }
 
 Date.prototype.toDateInputValue = (function() {
