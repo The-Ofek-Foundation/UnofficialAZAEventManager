@@ -308,6 +308,7 @@ function switch_page(id) {
 	$("a[href=\"" + id + "\"]").addClass("active");
 	$(".page").removeClass("active");
 	$(".page" + id).addClass('active');
+	window.location.hash = id;
 }
 
 /** Here starts index.html **/
