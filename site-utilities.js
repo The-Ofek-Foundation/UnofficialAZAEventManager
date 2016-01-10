@@ -7,6 +7,16 @@ function timeFormat(time) {
 	return first + second + " AM";
 }
 
+function timeUnformat(time) {
+	var first = parseInt(time.substring(0, time.indexOf(':')));
+	var second = time.substring(time.indexOf(':'), time.indexOf(' '));
+	if (time.indexOf("PM") !== -1)
+		first += 12;
+	if (first < 10)
+		return "0" + first + second;
+	return first + second;
+}
+
 function dateFormat(d) {
 	var date = new Date(d.replace(/-/g, ','));
 	var dateString = "";
@@ -73,6 +83,18 @@ function dateFormat(d) {
 	dateString += " " + date.getFullYear();
 
 	return dateString;
+}
+
+function dateUnformat(dateString) {
+	dateString = dateString.substring(dateString.indexOf(" ") + 1); // remove day of week
+
+	var month = dateString.substring(0, dateString.indexOf(" "));
+	dateString = dateString.substring(dateString.indexOf(" ") + 1);
+
+	var day = dateString.substring(0, dateString.indexOf(" ") - 2);
+	dateString = dateString.substring(dateString.indexOf(" ") + 1);
+
+	return new Date(dateString + "," + month + "," + day).toDateInputValue();
 }
 
 Date.prototype.toDateInputValue = (function() {

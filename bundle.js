@@ -7,6 +7,7 @@ const cryptr = new Cryptr("the-ofek-foundation");
 const event_attributes = ["date", "name", "description", "time", "location_name", "bring", "planners", "location"];
 
 var github = user = username = password = repos = repo_name = FeedRepo = logged_in = false;
+var override_event = false;
 
 $(document).ready(function() {
 	$("#login-dropdown").css("top", $("#navbar-top").height() - $("#login-dropdown").height() + "px").width($("#login-dropdown input").width());
@@ -75,7 +76,7 @@ function getFeed(callback) {
 		if (err)
 			if (err == "not found") {
 				console.error(err);
-				contents = "bozo alert";
+				contents = "No events posted.";
 			}
 			else popupError("Error reading rss-feed.txt, contact developer", err);
 		callback(err, contents);
@@ -117,7 +118,9 @@ function update_event_list_table() {
 				delete_event($(this).data("event-name"));
 			});
 			cols[1] = $("<td></td>").append(delete_button);
-			var edit_button = $("<button></button>").text("Edit").data("event_name", event_name).data("event_details", JSON.stringify(events[event_name]));
+			var edit_button = $("<button></button>").text("Edit").data("event-details", JSON.stringify(events[event_name])).click(function() {
+				edit_event(JSON.parse($(this).data("event-details")));
+			});
 			cols[2] = $("<td></td>").append(edit_button);
 
 			for (var i = 0; i < cols.length; i++)
@@ -128,7 +131,7 @@ function update_event_list_table() {
 	});
 }
 
-function delete_event(name) {
+function delete_event(name, callback) {
 	getFeed(function (err, contents) {
 		var feed;
 		try {
@@ -150,12 +153,34 @@ function delete_event(name) {
 
 		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)), "Update Event Feed", function(write_err) {
 			if (write_err)
-				popupError("Error writing to rss-feed.txt", write_err);
+				popupError("File already deleted", write_err);
 			else {
 				update_event_list_table();
+				callback();
 			}
 		});
 	});
+}
+
+function edit_event(event) {
+	override_event = event.name;
+	for (var i = 0; i < event_attributes.length; i++)
+		switch (event_attributes[i]) {
+			case "date":
+				$("input[name=\"event-" + event_attributes[i] + "\"]").val(dateUnformat(event[event_attributes[i]]));
+				break;
+			case "time":
+				$("input[name=\"event-" + event_attributes[i] + "\"]").val(timeUnformat(event[event_attributes[i]]));
+				break;
+			case "description":
+				$("textarea[name=\"event-" + event_attributes[i] + "\"]").val(event[event_attributes[i]]);
+				break;
+			default:
+				$("input[name=\"event-" + event_attributes[i] + "\"]").val(event[event_attributes[i]]);
+		}
+	switch_page("#add-events");
+	$("#cancel-edit-btn").show();
+	$("#write-event-status").text("");
 }
 
 function vert_align() {
@@ -376,16 +401,27 @@ $("#write-event-form").submit(function () {
 		}
 
 		var events = getFeedEvents(feed);
-		if (events[$("input[name=\"event-name\"]").val()]) {
+		if (events[$("input[name=\"event-name\"]").val()] && $("input[name=\"event-name\"]").val() !== override_event) {
 			$("#login-err").text("Event with name already exists!");
 			update_event_list_table();
 			return;
 		}
 
-		var new_event = feed.createElement("item");
-		var description = getEventDescriptionXML(feed);
-		new_event.appendChild(description);
-		feed.getElementsByTagName("channel")[0].appendChild(new_event);
+		if (override_event) {
+			var items = feed.getElementsByTagName("item");
+
+			for (var i = 0; i < items.length; i++)
+				if (getEventDetails(items[i].getElementsByTagName("description")[0].childNodes[1].data).name === override_event) {
+					items[i].getElementsByTagName("description")[0].childNodes[1].data = getEventDescriptionForm();
+					break;
+				}
+		}
+		else {
+			var new_event = feed.createElement("item");
+			var description = getEventDescriptionXML(feed);
+			new_event.appendChild(description);
+			feed.getElementsByTagName("channel")[0].appendChild(new_event);
+		}
 
 		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)), "Update Event Feed", function(write_err) {
 			if (write_err)
@@ -393,7 +429,11 @@ $("#write-event-form").submit(function () {
 			else {
 				if (err)
 					$("#write-event-status").text("Successfully created new file rss-feed.txt and added event");
+				else if (override_event)
+					$("#write-event-status").text("Successfully edited event");
 				else $("#write-event-status").text("Successfully added new event");
+				$("#cancel-edit-btn").hide();
+				override_event = false;
 				clearEventDescription();
 				update_event_list_table();
 			}
@@ -403,10 +443,26 @@ $("#write-event-form").submit(function () {
 	return false;
 });
 
+$("#cancel-edit-btn").click(function() {
+	$("#cancel-edit-btn").hide();
+	override_event = false;
+	clearEventDescription();
+});
+
 function getEventDescriptionXML(feed) {
-	var br = " <br /> ";
 	var description = feed.createElement("description");
-	var content = "<![CDATA[ " + br;
+
+	var content = "<![CDATA[ " + getEventDescriptionForm() + "]]>";
+	var contnode = feed.createTextNode(content);
+
+	description.appendChild(contnode);
+
+	return description;
+}
+
+function getEventDescriptionForm() {
+	var br = " <br /> ";
+	var content = br;
 
 	for (var i = 0; i < event_attributes.length; i++) {
 		switch (event_attributes[i]) {
@@ -425,12 +481,7 @@ function getEventDescriptionXML(feed) {
 		content += br;
 	}
 
-	content += "]]>";
-	var contnode = feed.createTextNode(content);
-
-	description.appendChild(contnode);
-
-	return description;
+	return content;
 }
 
 function getEventDetails(description) {
