@@ -519,7 +519,7 @@ function clearEventDescription() {
 }
 
 $("#archive-oldies").click(function () {
-	$("#num-archived").text("");
+	$("#num-archived").text("Archiving...");
 	getFeed(function (err, contents) {
 		var feed;
 		try {
