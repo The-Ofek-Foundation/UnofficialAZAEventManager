@@ -309,6 +309,7 @@ function switch_page(id) {
 	$("a[href=\"" + id + "\"]").addClass("active");
 	$(".page").removeClass("active");
 	$(".page" + id).addClass('active');
+	window.location.hash = id;
 }
 
 /** Here starts index.html **/
@@ -461,7 +462,7 @@ function getEventDescriptionXML(feed) {
 }
 
 function getEventDescriptionForm() {
-	var br = " <br /> ";
+	var br = " <br/> ";
 	var content = br;
 
 	for (var i = 0; i < event_attributes.length; i++) {

@@ -461,7 +461,7 @@ function getEventDescriptionXML(feed) {
 }
 
 function getEventDescriptionForm() {
-	var br = " <br /> ";
+	var br = " <br/> ";
 	var content = br;
 
 	for (var i = 0; i < event_attributes.length; i++) {
