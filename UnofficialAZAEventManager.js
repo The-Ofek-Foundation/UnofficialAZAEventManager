@@ -108,19 +108,18 @@ function update_event_list_table() {
 			return;
 		}
 		var events = getFeedEvents(feed);
-		var table = $("<table></table>").addClass("left-align");
+		var table = $("<table></table>");
 		for (var event_name in events) {
 			var row = $("<tr></tr>");
-			var cols = new Array(3);
-			cols[0] = $("<td></td>").text(event_name);
+			var cols = new Array(2);
+			cols[0] = $("<td></td>").text(event_name + " - " + dateMinimize(events[event_name].date));
 			var delete_button = $("<button></button>").data("event-name", event_name).text("Delete").click(function () {
 				delete_event($(this).data("event-name"));
 			});
-			cols[1] = $("<td></td>").append(delete_button);
 			var edit_button = $("<button></button>").text("Edit").data("event-details", JSON.stringify(events[event_name])).click(function() {
 				edit_event(JSON.parse($(this).data("event-details")));
 			});
-			cols[2] = $("<td></td>").append(edit_button);
+			cols[1] = $("<td></td>").append(delete_button).append(edit_button);
 
 			for (var i = 0; i < cols.length; i++)
 				row.append(cols[i]);
@@ -130,7 +129,7 @@ function update_event_list_table() {
 	});
 }
 
-function delete_event(name, callback) {
+function delete_event(name) {
 	getFeed(function (err, contents) {
 		var feed;
 		try {
@@ -153,10 +152,7 @@ function delete_event(name, callback) {
 		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)), "Update Event Feed", function(write_err) {
 			if (write_err)
 				popupError("File already deleted", write_err);
-			else {
-				update_event_list_table();
-				callback();
-			}
+			else update_event_list_table();
 		});
 	});
 }
@@ -179,6 +175,7 @@ function edit_event(event) {
 		}
 	switch_page("#add-events");
 	$("#cancel-edit-btn").show();
+	$("#write-event-form input[type=\"submit\"]").val("Edit event");
 	$("#write-event-status").text("");
 }
 
@@ -260,6 +257,7 @@ function logoutOfGithub() {
 function loginSuccess() {
 	logged_in = true;
 	$("#log-tab a").text('Logged in as ' + username);
+	$("#logout-dropdown").css("width", $("#log-tab").width() - paddings($("#logout-dropdown")) + "px");
 	toggleLogDropdown($("#login-dropdown"), false);
 	$(".login-alert").hide();
 	$("#logged-in-div").animate({
@@ -311,7 +309,11 @@ function switch_page(id) {
 	window.location.hash = id;
 }
 
-/** Here starts index.html **/
+function paddings(elem) {
+	return parseInt(elem.css("padding-left")) + parseInt(elem.css("padding-right"));
+}
+
+/** Here starts index.js **/
 
 $("#github-login-form").submit(function() {
 	$("#login-err").text("");
@@ -445,6 +447,7 @@ $("#write-event-form").submit(function () {
 
 $("#cancel-edit-btn").click(function() {
 	$("#cancel-edit-btn").hide();
+	$("#write-event-form input[type=\"submit\"]").val("Add event");
 	override_event = false;
 	clearEventDescription();
 });
@@ -500,12 +503,14 @@ function clearEventDescription() {
 
 	$("input[name=\"event-date\"]").val(new Date().toDateInputValue());
 	$("input[name=\"event-time\"]").val("18:00");
+	$("input[name=\"event-bring\"]").val("money for event");
 	$("input[type=\"submit\"").val("Add Event");
 }
 
 $(document).ready(function() {
 	$("#github-login-container").height($("#github-login-container .flippable figure").outerHeight(false));
 	$("#github-login-container .flippable figure").css("width", "100%").css("height", "100%");
+	$("#login-dropdown").css("min-width", $("#log-tab").width() - paddings($("#login-dropdown")) + "px");
 	loadUserFromFile();
 	$("input[name=\"event-date\"]").val(new Date().toDateInputValue());
 });

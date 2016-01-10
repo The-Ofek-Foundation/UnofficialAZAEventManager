@@ -97,6 +97,18 @@ function dateUnformat(dateString) {
 	return new Date(dateString + "," + month + "," + day).toDateInputValue();
 }
 
+function dateMinimize(dateString) {
+	dateString = dateString.substring(dateString.indexOf(" ") + 1); // remove day of week
+
+	var month = dateString.substring(0, dateString.indexOf(" "));
+	dateString = dateString.substring(dateString.indexOf(" ") + 1);
+
+	var day = dateString.substring(0, dateString.indexOf(" "));
+	dateString = dateString.substring(dateString.indexOf(" ") + 1);
+
+	return month + " " + day;
+}
+
 Date.prototype.toDateInputValue = (function() {
     var local = new Date(this);
     local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
