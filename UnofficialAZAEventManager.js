@@ -3,9 +3,11 @@ const $ = require('jquery');
 const pd = require('pretty-data').pd;
 const Cryptr = require("cryptr");
 const cryptr = new Cryptr("the-ofek-foundation");
+const cleaner = require("clean-html");
+
 const event_attributes = ["date", "name", "description", "time", "location_name", "bring", "planners", "location"];
 
-var github = user = username = password = repos = repo_name = FeedRepo = logged_in = false;
+var github = user = username = password = repos = repo_name = FeedRepo = FeedRepoInfo = logged_in = false;
 var override_event = false;
 
 $(document).ready(function() {
@@ -100,7 +102,49 @@ function getFeedEvents(feed) {
 	return events;
 }
 
+function updateHTMLFeed(events) {
+	var containing_div = $("<div></div>").addClass('css-events-list');
+
+	var zero_events = true;
+	for (var event_name in events) {
+		var event = events[event_name];
+		zero_events = false;
+		var item = $("<i></i>");
+
+		var date_p = $("<p></p>").addClass('event-date');
+		date_p.append($("<u></u>").text(event.date));
+		item.append(date_p);
+
+		var title_p = $("<p></p>").addClass('event-title');
+		title_p.append($("<b></b>").text(event.name));
+		item.append(title_p);
+
+		var details_div = $("<div></div>").addClass('event-details');
+		var description = $("<p></p>").addClass('event-description').text("Description: " + event.description);
+		var meet = $("<p></p>").addClass('event-meet').text("Meet: " + event.location_name + " (" + event.location + ") at " + event.time);
+		var bring = $("<p></p>").addClass('event-bring').text("Bring: " + event.bring);
+		var planned_by = $("<p></p>").addClass('planned_by').text("Planned by: " + event.planners);
+		details_div.append(description).append(meet).append(bring).append(planned_by);
+		item.append(details_div);
+
+		containing_div.append(item);
+	}
+
+	var father = $("<div></div>").append(containing_div);
+
+	cleaner.clean(father.html(), function (html) {
+		FeedRepo.write("gh-pages", "index.html", html, "Update Event Feed HTML", function(write_err) {
+			if (write_err)
+				popupError("Error creating html", write_err);
+		});
+	});
+}
+
 function update_event_list_table() {
+	var online_list = FeedRepoInfo.owner.login + ".github.io/" + FeedRepoInfo.name + "/";
+	var ref = $("<a></a>").attr("href", online_list).text(online_list);
+	$("#view-feed-online").children().remove();
+	$("#view-feed-online").text("View feed online: ").append(ref);
 	getFeed(function (err, contents) {
 		var feed;
 		$("#event-list-table-div").children().remove();
@@ -114,6 +158,7 @@ function update_event_list_table() {
 			return;
 		}
 		var events = getFeedEvents(feed);
+		updateHTMLFeed(events);
 
 		var zero_events = true;
 		var table = $("<table></table>");
@@ -230,6 +275,7 @@ function loadUserFromFile() {
 							FeedRepo = false;
 							saveUserToFile();
 						}
+						else FeedRepoInfo = contents;
 						loginSuccess();
 					});
 				}
@@ -251,7 +297,7 @@ function loginToGithub(username, password) {
 }
 
 function logoutOfGithub() {
-	github = user = username = password = repos = repo_name = FeedRepo = logged_in = false;
+	github = user = username = password = repos = repo_name = FeedRepo = FeedRepoInfo = logged_in = false;
 	setCookie("login-info", "", 0);
 	toggleLogDropdown($("#logout-dropdown"), false);
 	$("#log-tab a").text('Login');
@@ -371,6 +417,14 @@ $("#repo-name-form").submit(function() {
 					});
 					fullLoginSuccess();
 				}
+				FeedRepo.branch("gh-pages", function(branch_err) {
+					if (branch_err)
+						popupError("Error creating gh-pages branch, contact developer", branch_err);
+					FeedRepo.remove("gh-pages", "rss-feed.txt", function (rem_err) {
+						if (rem_err)
+							console.err(rem_err);
+					});
+				});
 			});
 		}
 	});
@@ -396,6 +450,7 @@ $("#repo-exists-btn").click(function () {
 				$(this).hide();
 				fullLoginSuccess();
 			});
+			FeedRepoInfo = contents;
 		}
 	});
 });
