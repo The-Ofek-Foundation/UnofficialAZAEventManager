@@ -1,3 +1,31 @@
+function readmeContents() {
+	var website_link = "https://" + FeedRepoInfo.owner.login + ".github.io/" + FeedRepoInfo.name + "/";
+	var contents = "[online website]:" + website_link + " \"the online website\"\n";
+	contents += "[css file]:https://github.com/" + FeedRepoInfo.owner.login + "/" + FeedRepoInfo.name + "/blob/gh-pages/styles.css \"the css file\"\n";
+
+	contents += "# Welcome to your RSS Feed gh-pages branch!\n";
+	contents += "### What is this branch?\n";
+	contents += "To put it simply, this branch allows us to host an [online website] with your own RSS feed, and update it automatically!  \n";
+	contents += "If you want to change the styling of the website&mdash;no problem! Just head over to the [css file] and modify it!  \n";
+	contents += "Note that this website might take a few minutes to update after every change to your RSS feed\n\n";
+
+	contents += "### How can I use this branch?\n";
+	contents += "Once you have styled the event feed from the [css file] to your liking,  \n";
+	contents += "you can include your RSS feed inside your own website by adding the following tag:\n\n";
+
+	contents += "```html\n";
+	contents += "<iframe src=\"" + website_link + "\" id=\"rss-feed-frame\"></iframe>\n";
+	contents += "```\n\n";
+
+	contents += "into your html, and then by changing the element's width and height accordingly";
+
+	return contents;
+}
+
+function cssContents() {
+	return '.css-events-list{text-align:center;font-size:1.6em}.css-events-list p{margin-top:0;margin-bottom:.5em}.event-date{font-size:1.8em;font-style:italic}.event-title{font-size:1.7em}.event-details p{margin-bottom:.25em}';
+}
+
 function timeFormat(time) {
 	var first = parseInt(time.substring(0, time.indexOf(':')));
 	var second = time.substring(time.indexOf(':'));

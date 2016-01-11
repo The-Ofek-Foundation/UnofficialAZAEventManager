@@ -4,6 +4,7 @@ const pd = require('pretty-data').pd;
 const Cryptr = require("cryptr");
 const cryptr = new Cryptr("the-ofek-foundation");
 const cleaner = require("clean-html");
+const cssbeautify = require("cssbeautify");
 
 const event_attributes = ["date", "name", "description", "time", "location_name", "bring", "planners", "location"];
 
@@ -109,7 +110,7 @@ function updateHTMLFeed(events) {
 	for (var event_name in events) {
 		var event = events[event_name];
 		zero_events = false;
-		var item = $("<i></i>");
+		var item = $("<div></div>").addClass('event');
 
 		var date_p = $("<p></p>").addClass('event-date');
 		date_p.append($("<u></u>").text(prettyDate(event.date)));
@@ -129,6 +130,10 @@ function updateHTMLFeed(events) {
 
 		containing_div.append(item);
 	}
+	if (zero_events)
+		containing_div.append($("<p></p>").addClass('no-events').text("No events posted."));
+
+	containing_div.append($('<link rel="stylesheet" type="text/css"></link>').attr("href", "styles.css"));
 
 	var father = $("<div></div>").append(containing_div);
 
@@ -155,6 +160,7 @@ function update_event_list_table() {
 		}
 		catch (err) {
 			$("#event-list-table-div").text("No events posted.");
+			updateHTMLFeed({});
 			return;
 		}
 		var events = getFeedEvents(feed);
@@ -327,6 +333,7 @@ function loginSuccess() {
 }
 
 function fullLoginSuccess() {
+	$("#readme-ref").attr("href", "https://github.com/" + FeedRepoInfo.owner.login + "/" + FeedRepoInfo.name + "/tree/gh-pages");
 	$(".navbar > li a").removeAttr('disabled');
 	$(".login-only").show();
 	update_event_list_table();
@@ -414,15 +421,36 @@ $("#repo-name-form").submit(function() {
 						"margin-top": "-10px"
 					}, 1000, function () {
 						$(this).hide();
+						fullLoginSuccess();
 					});
-					fullLoginSuccess();
 				}
 				FeedRepo.branch("gh-pages", function(branch_err) {
-					if (branch_err)
+					if (branch_err) {
 						popupError("Error creating gh-pages branch, contact developer", branch_err);
+						return;
+					}
 					FeedRepo.remove("gh-pages", "rss-feed.txt", function (rem_err) {
 						if (rem_err)
-							console.err(rem_err);
+							console.error("remove err ", rem_err);
+					});
+
+					FeedRepo.show(function (show_err, contents) {
+						if (show_err)
+							popupError("Unexpected show error, contact developer", show_err);
+						else {
+							FeedRepoInfo = contents;
+							FeedRepo.write("gh-pages", "README.md", readmeContents(), "Create readme", function (readme_err) {
+								if (readme_err)
+									console.error("readme err ", readme_err);
+							});
+
+							FeedRepo.write("gh-pages", "styles.css", cssbeautify(cssContents(), {indent: '  ', autosemicolon: true}), "Create styles", function (css_err) {
+								if (css_err)
+									if (css_err.error == 409)
+										popupError("Conflict when creating styles.css, contact developer", css_err);
+									else console.error("css err ", css_err);
+							});
+						}
 					});
 				});
 			});
