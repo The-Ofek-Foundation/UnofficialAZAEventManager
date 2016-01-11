@@ -113,7 +113,7 @@ function updateHTMLFeed(events) {
 		var item = $("<i></i>");
 
 		var date_p = $("<p></p>").addClass('event-date');
-		date_p.append($("<u></u>").text(event.date));
+		date_p.append($("<u></u>").text(prettyDate(event.date)));
 		item.append(date_p);
 
 		var title_p = $("<p></p>").addClass('event-title');

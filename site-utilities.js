@@ -121,31 +121,21 @@ function stringToDate(dateString) {
 }
 
 function dateMinimize(dateString) {
-	dateString = dateString.substring(dateString.indexOf(" ") + 1); // remove day of week
-
-	var month = dateString.substring(0, dateString.indexOf(" "));
-	dateString = dateString.substring(dateString.indexOf(" ") + 1);
-
-	var day = dateString.substring(0, dateString.indexOf(" "));
-	dateString = dateString.substring(dateString.indexOf(" ") + 1);
-
-	var date = new Date(dateString + "," + month + "," + day);
+	var date = stringToDate(dateString);
 
 	return getMonth(date) + " " + getDate(date);
 }
 
 function archiveDate(dateString) {
-	dateString = dateString.substring(dateString.indexOf(" ") + 1); // remove day of week
-
-	var month = dateString.substring(0, dateString.indexOf(" "));
-	dateString = dateString.substring(dateString.indexOf(" ") + 1);
-
-	var day = dateString.substring(0, dateString.indexOf(" "));
-	dateString = dateString.substring(dateString.indexOf(" ") + 1);
-
-	var date = new Date(dateString + "," + month + "," + day);
+	var date = stringToDate(dateString);
 
 	return getMonth(date) + " " + getDate(date) + " " + getYear(date);
+}
+
+function prettyDate(dateString) {
+	var date = stringToDate(dateString);
+
+	return getDay(date) + ", " + getMonth(date) + " " + getDate(date);
 }
 
 Date.prototype.toDateInputValue = (function() {
