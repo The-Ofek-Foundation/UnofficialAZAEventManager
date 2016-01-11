@@ -142,8 +142,8 @@ function updateHTMLFeed(events) {
 }
 
 function update_event_list_table() {
-	var online_list = FeedRepoInfo.owner.login + ".github.io/" + FeedRepoInfo.name + "/";
-	var ref = $("<a></a>").attr("href", online_list).text(online_list);
+	var online_list = "https://" + FeedRepoInfo.owner.login + ".github.io/" + FeedRepoInfo.name + "/";
+	var ref = $("<a></a>").attr("href", online_list).attr("target", "_blank").text(online_list);
 	$("#view-feed-online").children().remove();
 	$("#view-feed-online").text("View feed online: ").append(ref);
 	getFeed(function (err, contents) {
