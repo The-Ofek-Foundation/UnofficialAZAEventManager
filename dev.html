@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Unofficial AZA Event Manager</title>
+    <link rel="stylesheet/less" type="text/css" href="UnofficialAZAEventManager.less" />
+    <script src="less.min.js" type="text/javascript"></script>
+    <script src="site-utilities.js" type="text/javascript"></script>
+    <link rel="icon" href="ramon-icon.ico" type="image/x-icon">
+  </head>
+  <body>
+    <ul class="navbar" id="navbar-top">
+      <li><a class="active" href="#setup">Setup</a></li>
+      <li><a href="#add-events" disabled>Add Events</a></li>
+      <li><a href="#manage-events" disabled>Manage Events</a></li>
+      <ul style="float:right;l ist-style-type:none;">
+        <li id="login-err"></li>
+        <li id="log-tab"><a href="#login">Login</a></li>
+      </ul>
+    </ul>
+    <div id="login-dropdown">
+      <form id="github-login-form">
+        <input type="text" placeholder="YOUR_USERNAME" name="username" required>
+        <input type="text" placeholder="YOUR_PASSWORD" name="password" required>
+        <input type="submit" value="Login"> <!--<span id="login-err"></span>-->
+      </form>
+    </div>
+    <div id="logout-dropdown">
+      <button id="github-logout">Logout?</button>
+    </div>
+
+    <div class="page active" id="setup">
+      <h1>Welcome to the Unofficial AZA Event Manager!</h1>
+      <h2 class="login-alert">Please login to github above to start!</h2>
+      <div id="logged-in-div" style="opacity: 0; margin-top: -10px">
+        <div id="create-repo" style="display: none;">
+          <form id="repo-name-form">
+            <h3>Choose a name for your RSS feed repo: <input class="inline" type="text" value="ChapterEventFeedRepo" name="rss-repo" required></h3>
+            <div class="text-center">
+              <input type="submit" value="Create">
+            </div>
+          </form>
+          <br />
+          Or does the repo already exist? <input id="repo-exists" placeholder="REPO_NAME" class="inline"> <button id="repo-exists-btn">Submit</button>
+        </div>
+      </div>
+      <div class="login-only" style="display: none;">
+        <h2>You have successfully logged in!!!</h2>
+        <h3>Head over to another tab to start managing your feed!</h3>
+      </div>
+    </div>
+    <div class="page" id="add-events">
+      <form id="write-event-form" style="text-align: left;">
+        <h3>Event Name: <input class="inline" type="text" name="event-name" placeholder="Fraternity Night" required></h3>
+        <h3>Event Start Date: <input class="inline" type="date" name="event-date" required></h3>
+        <h3>Event Description: <textarea name="event-description" placeholder="Event description" rows="1" required></textarea></h3>
+        <h3>Event Time: <input class="inline" type="time" name="event-time" value="18:00" required></h3>
+        <h3>What to bring: <input class="inline" type="text" name="event-bring" value="money for event" required></h3>
+        <h3>Event planner/s: <input class="inline" type="text" name="event-planners" placeholder="Abestein" required></h3>
+        <h3>Event Location Name: <input class="inline" type="text" name="event-location_name" placeholder="Abestein's house" required></h3>
+        <h3>Google maps location: <input class="inline" type="text" name="event-location" placeholder="11111 jason house way" required></h3>
+        <div class="text-center">
+          <input type="submit" value="Add event">
+          <input id="cancel-edit-btn" type="button" style="display: none;" value="Cancel edit">
+        </div>
+        <br />
+        <div id="write-event-status"></div>
+      </form>
+    </div>
+    <div class="page" id="manage-events">
+      <h1>Start managing events!</h1>
+      <button id="archive-oldies">Archive old events</button><span id="num-archived"></span>
+      <div id="event-list-table-div"></div>
+    </div>
+    <div id="screen-dim" style="display: none;"></div>
+    <div id="error-popup" style="display: none;">
+      <div id="error-popup-text">Error</div>
+      <textarea id="strange-error" disabled></textarea>
+      <button id="close-error-popup-btn">Close</button>
+    </div>
+  </body>
+  <script type="text/javascript" src="dev-bundle.js"></script>
+</html>
