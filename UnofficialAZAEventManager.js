@@ -637,8 +637,9 @@ $("#archive-oldies").click(function () {
 			feed = StringToXML(contents);
 		}
 		catch (err) {
-			popupError("rss-feed.txt changed");
 			update_event_list_table();
+			$("#num-archived").text("0 events archived");
+			console.error("No events listed!");
 			return;
 		}
 		var items = feed.getElementsByTagName("item");
