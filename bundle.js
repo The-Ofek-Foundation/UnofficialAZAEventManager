@@ -124,10 +124,10 @@ function updateHTMLFeed(events) {
 		item.append(title_p);
 
 		var details_div = $("<div></div>").addClass('event-details');
-		var description = $("<p></p>").addClass('event-description').text("Description: " + event.description);
-		var meet = $("<p></p>").addClass('event-meet').text("Meet: " + event.location_name + " (" + event.location + ") at " + event.time);
-		var bring = $("<p></p>").addClass('event-bring').text("Bring: " + event.bring);
-		var planned_by = $("<p></p>").addClass('planned_by').text("Planned by: " + event.planners);
+		var description = $("<p></p>").addClass('event-description').text(" " + event.description).prepend($("<strong></strong>").text("Description:"));
+		var meet = $("<p></p>").addClass('event-meet').text(" " + event.location_name + " (" + event.location + ") at " + event.time).prepend($("<strong></strong>").text("Meet:"));
+		var bring = $("<p></p>").addClass('event-bring').text(" " + event.bring).prepend($("<strong></strong>").text("Bring:"));
+		var planned_by = $("<p></p>").addClass('planned_by').text(" " + event.planners).prepend($("<strong></strong>").text("Planned by:"));
 		details_div.append(description).append(meet).append(bring).append(planned_by);
 		item.append(details_div);
 
