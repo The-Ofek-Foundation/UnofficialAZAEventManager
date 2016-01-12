@@ -1,4 +1,4 @@
-function readmeContents() {
+function ghReadmeContents() {
 	var website_link = "https://" + FeedRepoInfo.owner.login + ".github.io/" + FeedRepoInfo.name + "/";
 	var contents = "[online website]:" + website_link + " \"the online website\"\n";
 	contents += "[css file]:https://github.com/" + FeedRepoInfo.owner.login + "/" + FeedRepoInfo.name + "/blob/gh-pages/styles.css \"the css file\"\n";
@@ -20,6 +20,10 @@ function readmeContents() {
 	contents += "into your html, and then by changing the element's width and height accordingly";
 
 	return contents;
+}
+
+function readmeContents() {
+	return "# Welcome to your website";
 }
 
 function cssContents() {

@@ -326,6 +326,7 @@ function logoutOfGithub() {
 	$(".navbar > li a").attr("disabled", true);
 	$("a[href=\"#setup\"]").removeAttr("disabled");
 	$(".login-only").hide();
+	$("#generate-repos-span").text("");
 	switch_page("#setup");
 }
 
@@ -359,7 +360,7 @@ function popupError(err_message, log) {
 	if (log) {
 		$("#strange-error").show();
 		console.error(log);
-		$("#strange-error").text(log);
+		$("#strange-error").text(JSON.stringify(log));
 	}
 	else $("#strange-error").hide();
 	$("#screen-dim").animate({opacity: 0.8}, "1000");
@@ -416,6 +417,8 @@ $("#github-login-form").submit(function() {
 $("#repo-name-form").submit(function() {
 	repo_name = $("input[name=\"rss-repo\"]").val();
 
+	$("#generate-repos-span").text(" Generating...");
+
 	user.createRepo({"name": repo_name}, function(err, res) {
 		if (err)
 			if (err.error == 422)
@@ -424,53 +427,58 @@ $("#repo-name-form").submit(function() {
 		else {
 			FeedRepo = getRepo(repo_name);
 			saveUserToFile();
-			FeedRepo.write("master", "rss-feed.txt", "No events posted yet.", "Created Event Feed", function(create_err) {
-				if (create_err)
-					popupError("Error creating file rss-feed.txt", create_err);
+			FeedRepo.show(function (show_err, contents) {
+				if (show_err)
+					popupError("Unexpected show error, contact developer", show_err);
 				else {
-					$("#create-repo").animate({
-						opacity: 0,
-						"margin-top": "-10px"
-					}, 1000, function () {
-						$(this).hide();
-						fullLoginSuccess();
+					FeedRepoInfo = contents;
+
+					FeedRepo.write("master", "rss-feed.txt", "No events posted yet.", "Created Event Feed", function(create_err) {
+						if (create_err) {
+							popupError("Error creating file rss-feed.txt, contact developer", create_err);
+						}
+						else generate_gh_pages(function () {
+							$("#create-repo").animate({
+								opacity: 0,
+								"margin-top": "-10px"
+							}, 1000, function () {
+								$(this).hide();
+								fullLoginSuccess();
+							});
+						});
 					});
 				}
-				FeedRepo.branch("gh-pages", function(branch_err) {
-					if (branch_err) {
-						popupError("Error creating gh-pages branch, contact developer", branch_err);
-						return;
-					}
-					FeedRepo.remove("gh-pages", "rss-feed.txt", function (rem_err) {
-						if (rem_err)
-							console.error("remove err ", rem_err);
-					});
-
-					FeedRepo.show(function (show_err, contents) {
-						if (show_err)
-							popupError("Unexpected show error, contact developer", show_err);
-						else {
-							FeedRepoInfo = contents;
-							FeedRepo.write("gh-pages", "README.md", readmeContents(), "Create readme", function (readme_err) {
-								if (readme_err)
-									console.error("readme err ", readme_err);
-							});
-
-							FeedRepo.write("gh-pages", "styles.css", cssbeautify(cssContents(), {indent: '  ', autosemicolon: true}), "Create styles", function (css_err) {
-								if (css_err)
-									if (css_err.error == 409)
-										popupError("Conflict when creating styles.css, contact developer", css_err);
-									else console.error("css err ", css_err);
-							});
-						}
-					});
-				});
 			});
 		}
 	});
 
 	return false;
 });
+
+function generate_gh_pages(callback) {
+	FeedRepo.branch("gh-pages", function(branch_err) {
+		if (branch_err) {
+			popupError("Error creating gh-pages branch, contact developer", branch_err);
+			callback();
+			return;
+		}
+		else FeedRepo.remove("gh-pages", "rss-feed.txt", function (rem_err) {
+			if (rem_err)
+				console.error("remove err ", rem_err);
+			FeedRepo.write("gh-pages", "styles.css", cssbeautify(cssContents(), {indent: '  ', autosemicolon: true}), "Create styles", function (css_err) {
+				if (css_err)
+					if (css_err.error == 409)
+						popupError("Conflict when creating styles.css, contact developer", css_err);
+					else console.error("css err ", css_err);
+				FeedRepo.write("gh-pages", "README.md", ghReadmeContents(), "Create gh readme", function (readme_gh_err) {
+					if (readme_gh_err)
+						console.error("readme gh err ", readme_gh_err);
+					callback();
+				});
+			});
+		});
+	});
+}
 
 $("#repo-exists-btn").click(function () {
 	repo_name = $("#repo-exists").val();
