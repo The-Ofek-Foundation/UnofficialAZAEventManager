@@ -5,11 +5,13 @@ const Cryptr = require("cryptr");
 const cryptr = new Cryptr("the-ofek-foundation");
 const cleaner = require("clean-html");
 const cssbeautify = require("cssbeautify");
+const JSZip = require("jszip");
 
 const event_attributes = ["date", "name", "description", "time", "location_name", "bring", "planners", "location"];
 
 var github = user = username = password = repos = repo_name = FeedRepo = FeedRepoInfo = logged_in = false;
 var override_event = false;
+var fr, file; // for reading contacts csv
 
 $(document).ready(function() {
 	$("#login-dropdown").css("top", $("#navbar-top").height() - $("#login-dropdown").height() + "px").width($("#login-dropdown input").width());
@@ -239,6 +241,15 @@ function edit_event(event) {
 	$("#cancel-edit-btn").show();
 	$("#write-event-form input[type=\"submit\"]").val("Edit event");
 	$("#write-event-status").text("");
+}
+
+function generate_chapter_pack(csv_contents) {
+	var zip = new JSZip();
+	zip.file("ContactList.csv", csv_contents);
+	zip.file("EventFeed.txt", "https://raw.githubusercontent.com/" + FeedRepoInfo.owner.login + "/" + FeedRepoInfo.name + "/master/rss-feed.txt");
+	var content = zip.generate({type:"string"});
+
+	saveZip(content, "Chapter Pack - " + FeedRepoInfo.owner.login);
 }
 
 function vert_align() {
@@ -539,6 +550,14 @@ $("#write-event-form").submit(function () {
 	return false;
 });
 
+$("#chapter-pack-form").submit(function () {
+	getFileContents('contact-csv', function (contents) {
+		generate_chapter_pack(contents);
+	});
+
+	return false;
+});
+
 $("#cancel-edit-btn").click(function() {
 	$("#cancel-edit-btn").hide();
 	$("#write-event-form input[type=\"submit\"]").val("Add event");
@@ -648,6 +667,26 @@ $("#archive-oldies").click(function () {
 		});
 	});
 });
+function getFileContents (id, callback)	{
+    if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
+      popupError('The File APIs are not fully supported in this browser.');
+      return false;
+    }
+
+    input = document.getElementById(id);
+    if (!input)
+		popupError("Cannot find input element, try reloading page");
+    else if (!input.files)
+      popupError("This browser doesn't seem to support the `files` property of file inputs.");
+    else if (!input.files[0])
+      popupError("Please select a file first");
+    else {
+		file = input.files[0];
+		fr = new FileReader();
+		fr.onload = function() { callback(fr.result); }
+		fr.readAsText(file);
+    }
+  }
 
 $(document).ready(function() {
 	$("#github-login-container").height($("#github-login-container .flippable figure").outerHeight(false));

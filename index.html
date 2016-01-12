@@ -6,6 +6,7 @@
     <link rel="stylesheet/less" type="text/css" href="UnofficialAZAEventManager.less" />
     <script src="less.min.js" type="text/javascript"></script>
     <script src="site-utilities.js" type="text/javascript"></script>
+    <script src="FileSaver.min.js" type="text/javascript"></script>
     <link rel="icon" href="ramon-icon.ico" type="image/x-icon">
   </head>
   <body>
@@ -13,6 +14,7 @@
       <li><a class="active" href="#setup">Setup</a></li>
       <li><a href="#add-events" disabled>Add Events</a></li>
       <li><a href="#manage-events" disabled>Manage Events</a></li>
+      <li><a href="#chapter-pack" disabled>Chapter Packs</a></li>
       <ul style="float:right;l ist-style-type:none;">
         <li id="login-err"></li>
         <li id="log-tab"><a href="#login">Login</a></li>
@@ -79,6 +81,19 @@
       <div id="error-popup-text">Error</div>
       <textarea id="strange-error" disabled></textarea>
       <button id="close-error-popup-btn">Close</button>
+    </div>
+    <div class="page" id="chapter-pack">
+    <h1>Generate your chapter's chapter pack!</h1>
+    <ol id="chapter-pack-steps-list">
+      <li> Create your contact list csv file (view documentation <a href="https://github.com/ischeinkman/UnofficialAZAApp/wiki/Chapter-Packs#contactlistcsv" target="_blank">here</a>)</li>
+      <li> Upload your csv file here</li>
+      <form id="chapter-pack-form">
+        <input type="file" name="contact-csv" id="contact-csv" accept=".csv">
+        <li> Generate and download your chapter pack!</li>
+        <input type="submit" value="Generate and download">
+        <strong>Note that the zip file must contain the words "Chapter Pack" to be recognized!</strong>
+      </form>
+    </ol>
     </div>
   </body>
   <script type="text/javascript" src="bundle.js"></script>

@@ -206,3 +206,23 @@ input {
 #num-archived {
 	margin-left: 1em;
 }
+
+#chapter-pack-steps-list {
+	text-align: left;
+
+	li {
+		list-style-type: none;
+		counter-increment: item;
+
+		&:before {
+			padding-right: 0.5em;
+			font-weight: bold;
+			text-align: right;
+			content: counter(item) ".";
+		}
+	}
+
+	* {
+		margin-bottom: 1em;
+	}
+}

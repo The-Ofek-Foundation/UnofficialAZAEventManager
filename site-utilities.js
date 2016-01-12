@@ -197,3 +197,17 @@ function getCookie(cname) {
     }
     return "";
 }
+
+function str2bytes (str) {
+	var bytes = new Uint8Array(str.length);
+	for (var i=0; i<str.length; i++)
+		bytes[i] = str.charCodeAt(i);
+	return bytes;
+}
+
+function saveZip(content, file_name) {
+	if (file_name.indexOf(".zip") === -1)
+		file_name += ".zip";
+	var blob = new Blob([str2bytes(content)], {type: "application/zip"});
+	saveAs(blob, file_name);
+}
