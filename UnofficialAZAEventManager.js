@@ -8,6 +8,7 @@ const cssbeautify = require("cssbeautify");
 const JSZip = require("jszip");
 
 const event_attributes = ["date", "name", "description", "time", "location_name", "bring", "planners", "location"];
+const gh_legals = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.'];
 
 var github = user = username = password = repos = repo_name = FeedRepo = FeedRepoInfo = logged_in = false;
 var override_event = false;
@@ -414,27 +415,35 @@ $("#github-login-form").submit(function() {
 });
 
 $("#repo-name-form").submit(function() {
-	repo_name = $("input[name=\"rss-repo\"]").val();
+	repo_name = gh_legalize($("input[name=\"rss-repo\"]").val());
 
 	$("#generate-repos-span").text(" Generating...");
+	$("#login-err").text("");
 
 	user.createRepo({"name": repo_name}, function(err, res) {
-		if (err)
+		if (err) {
 			if (err.error == 422)
 				$("#login-err").text("Repo already exists!");
 			else popupError("Error creating repo, contact developer", err);
+			$("#generate-repos-span").text(" Error");
+		}
 		else {
 			FeedRepo = getRepo(repo_name);
 			saveUserToFile();
 			FeedRepo.show(function (show_err, contents) {
-				if (show_err)
-					popupError("Unexpected show error, contact developer", show_err);
+				if (show_err) {
+					if (show_err.error == 404)
+						popupError("Could not find repo, may use illegal characters");
+					else popupError("Unexpected show error, contact developer", show_err);
+					$("#generate-repos-span").text(" Error");
+				}
 				else {
 					FeedRepoInfo = contents;
 
 					FeedRepo.write("master", "rss-feed.txt", "No events posted yet.", "Created Event Feed", function(create_err) {
 						if (create_err) {
 							popupError("Error creating file rss-feed.txt, contact developer", create_err);
+							$("#generate-repos-span").text(" Error");
 						}
 						else generate_gh_pages(function () {
 							$("#create-repo").animate({
@@ -610,6 +619,7 @@ function getEventDescriptionForm() {
 
 function getEventDetails(description) {
 	var ev = {};
+	console.log(description);
 	for (var i = 0; i < event_attributes.length; i++) {
 		description = description.substring(description.indexOf(">") + 1);
 		var attribute = description.substring(1, description.indexOf("<") - 1);
@@ -676,6 +686,7 @@ $("#archive-oldies").click(function () {
 		});
 	});
 });
+
 function getFileContents (id, callback)	{
     if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
       popupError('The File APIs are not fully supported in this browser.');
@@ -695,7 +706,30 @@ function getFileContents (id, callback)	{
 		fr.onload = function() { callback(fr.result); }
 		fr.readAsText(file);
     }
-  }
+}
+
+$("input[name=\"rss-repo\"]").keyup(function () {
+	legalize_input($(this));
+});
+
+$("#repo-exists").keyup(function () {
+	legalize_input($(this));
+});
+
+function legalize_input(input) {
+	var val = gh_legalize(input.val());
+
+	if (val !== input.val())
+		input.val(val);
+}
+
+function gh_legalize(val) {
+	for (var i = 0; i < val.length; i++)
+		if (gh_legals.indexOf(val.charAt(i)) === -1)
+			val = val.substring(0, i) + '-' + val.substring(i + 1);
+
+	return val;
+}
 
 $(document).ready(function() {
 	$("#github-login-container").height($("#github-login-container .flippable figure").outerHeight(false));
