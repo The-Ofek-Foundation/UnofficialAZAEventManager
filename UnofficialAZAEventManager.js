@@ -125,7 +125,7 @@ function updateHTMLFeed(events) {
 
 		var details_div = $("<div></div>").addClass('event-details');
 		var description = $("<p></p>").addClass('event-description').text(" " + event.description).prepend($("<strong></strong>").text("Description:"));
-		var meet = $("<p></p>").addClass('event-meet').text(" " + event.location_name + " (" + event.location + ") at " + event.time).prepend($("<strong></strong>").text("Meet:"));
+		var meet = $("<p></p>").addClass('event-meet').html(" " + event.location_name + " (<a target=\"_blank\" href=\"https://maps.google.com/?q=" + event.location + "\">" + event.location + "</a>) at " + event.time).prepend($("<strong></strong>").text("Meet:"));
 		var bring = $("<p></p>").addClass('event-bring').text(" " + event.bring).prepend($("<strong></strong>").text("Bring:"));
 		var planned_by = $("<p></p>").addClass('planned_by').text(" " + event.planners).prepend($("<strong></strong>").text("Planned by:"));
 		details_div.append(description).append(meet).append(bring).append(planned_by);
@@ -619,7 +619,6 @@ function getEventDescriptionForm() {
 
 function getEventDetails(description) {
 	var ev = {};
-	console.log(description);
 	for (var i = 0; i < event_attributes.length; i++) {
 		description = description.substring(description.indexOf(">") + 1);
 		var attribute = description.substring(1, description.indexOf("<") - 1);
