@@ -107,7 +107,7 @@ function getFeedEvents(feed) {
 	var events = {};
 
 	for (var i = 0; i < items.length; i++) {
-		var event_details = getEventDetails(items[i].getElementsByTagName("description")[0].childNodes[1].data);
+		var event_details = getEventDetails(items[i].getElementsByTagName("description")[0].childNodes[1].data.replace(/></g, "> <"));
 		events[event_details.name] = event_details;
 	}
 
@@ -135,15 +135,15 @@ function updateHTMLFeed(events) {
 		var description = $("<p></p>").addClass('event-description').text(" " + event.description).prepend($("<strong></strong>").text("Description:"));
 		details_div.append(description)
 		var meet;
-		if (event.location_name)
-			meet = $("<p></p>").addClass('event-meet').html(" " + event.location_name + (event.location ? (" (<a target=\"_blank\" href=\"https://maps.google.com/?q=" + event.location + "\">" + event.location + "</a>)"):"") + " at " + event.time).prepend($("<strong></strong>").text("Meet:"));
+		if (event.location_name && event.location_name !== ' ')
+			meet = $("<p></p>").addClass('event-meet').html(" " + event.location_name + ((event.location || event.location !== ' ') ? (" (<a target=\"_blank\" href=\"https://maps.google.com/?q=" + event.location + "\">" + event.location + "</a>)"):"") + " at " + event.time).prepend($("<strong></strong>").text("Meet:"));
 		else meet = $("<p></p>").addClass('event-meet').text(" at " + event.time).prepend($("<strong></strong>").text("Meet"));
 		details_div.append(meet);
-		if (event.bring) {
+		if (event.bring && event.bring !== ' ') {
 			var bring = $("<p></p>").addClass('event-bring').text(" " + event.bring).prepend($("<strong></strong>").text("Bring:"));
 			details_div.append(bring);
 		}
-		if (event.planners) {
+		if (event.planners && event.planners !== ' ') {
 			var planned_by = $("<p></p>").addClass('planned_by').text(" " + event.planners).prepend($("<strong></strong>").text("Planned by:"));
 			details_div.append(planned_by);
 		}
@@ -666,7 +666,6 @@ function clearEventDescription() {
 
 	$("input[name=\"event-date\"]").val(new Date().toDateInputValue());
 	$("input[name=\"event-time\"]").val("18:00");
-	$("input[name=\"event-bring\"]").val("money for event");
 	$("input[type=\"submit\"").val("Add Event");
 }
 

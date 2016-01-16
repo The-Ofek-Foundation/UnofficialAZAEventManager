@@ -181,7 +181,7 @@ function StringToXML(oString) {
 }
 
 function XMLToString(oXML) {
-	return (new XMLSerializer()).serializeToString(oXML).replace(/&amp/g, '&;').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&quot;/g, '"').replace(/&apos;/g, '\'');
+	return (new XMLSerializer()).serializeToString(oXML).replace(/&amp/g, '&;').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&quot;/g, '"').replace(/&apos;/g, '\'').replace(/></g, "> <");
 }
 
 function setCookie(cname, cvalue, exdays) {
