@@ -36,7 +36,8 @@
       <h2 class="login-alert">Please login to github above to start!</h2>
       <div id="logged-in-div" style="opacity: 0; margin-top: -10px">
         <div id="create-repo" style="display: none;">
-          <h3 style="font-weight: 400;">Optional, choose organization name (for new or existing repo): <input class="inline" type="text" placeholder="Optional ORG_NAME" name="org-name"></h3>
+          <h3 style="font-weight: 400;">Choose owner/organization name (for new or existing repo): <input class="inline" type="text" placeholder="OWNER_NAME" name="owner-name"></h3>
+          <h3 style="font-weight: 400;">Owned by organization? <input class="inline" type="checkbox" name="org-check"></h3>
           <form id="repo-name-form">
             <h3>Choose a name for your RSS feed repo: <input class="inline" type="text" value="ChapterEventFeedRepo" placeholder="REPO_NAME" name="rss-repo" required></h3>
             <div class="text-center">
@@ -58,14 +59,14 @@
         <h3>Event Name: <input class="inline" type="text" name="event-name" placeholder="Fraternity Night" required></h3>
         <h3>Event Start Date: <input class="inline" type="date" name="event-date" required></h3>
         <h3>Event Description: <textarea name="event-description" placeholder="Event description" rows="1" required></textarea></h3>
-        <h3>Event Time: <input class="inline" type="time" name="event-time" value="18:00" required></h3>
+        <h3>Event Time: <input class="inline" type="time" name="event-time" required></h3>
         <h3>What to bring: <input class="inline" type="text" name="event-bring" placeholder="money for event"></h3>
         <h3>Event planner/s: <input class="inline" type="text" name="event-planners" placeholder="Abestein"></h3>
         <h3>Event Location Name: <input class="inline" type="text" name="event-location_name" placeholder="Abestein's house"></h3>
         <h3>Google maps location: <input class="inline" type="text" name="event-location" placeholder="11111 jason house way"></h3>
         <div class="text-center">
-          <input type="submit" value="Add event">
-          <input id="cancel-edit-btn" type="button" style="display: none;" value="Cancel edit">
+          <input type="submit">
+          <input id="cancel-edit-btn" type="button" style="display: none;">
         </div>
         <br />
         <div id="write-event-status"></div>

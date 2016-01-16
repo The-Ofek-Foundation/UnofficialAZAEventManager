@@ -74,7 +74,6 @@ function getUserRepos(user, callback) {
 }
 
 function getRepo(repo_name) {
-
 	return github.getRepo(owner, repo_name);
 }
 
@@ -427,6 +426,7 @@ $("#github-login-form").submit(function() {
 				$("#login-err").text("Invalid login details");
 		}
 		else {
+			$("input[name=\"owner-name\"]").val(owner);
 			loginSuccess();
 			saveUserToFile();
 			this.repos = repos;
@@ -441,9 +441,8 @@ $("#repo-name-form").submit(function() {
 
 	$("#generate-repos-span").text(" Generating...");
 	$("#login-err").text("");
-	var org = $("input[name=\"org-name\"]").val();
-	if (org)
-		owner = org;
+	owner = $("input[name=\"owner-name\"]").val();
+	var org = $("input[name=\"org-check\"]").prop('checked') ? owner:false;
 
 	create_repo(org, {"name": repo_name}, function(err, res) {
 		if (err) {
@@ -519,9 +518,7 @@ function generate_gh_pages(callback) {
 
 $("#repo-exists-btn").click(function () {
 	repo_name = $("#repo-exists").val();
-	var org = $("input[name=\"org-name\"]").val();
-	if (org)
-		owner = org;
+	owner = $("input[name=\"owner-name\"]").val();
 	FeedRepo = getRepo(repo_name);
 	$("#login-err").text("");
 	FeedRepo.show(function (err, contents) {
@@ -529,6 +526,8 @@ $("#repo-exists-btn").click(function () {
 			if (err.error == 404)
 				popupError("Repo not found");
 			else popupError("Repo error, contact developer", err);
+		else if (!contents.permissions.pull || !contents.permissions.push)
+			popupError("Check your permission to access this repo!");
 		else {
 			saveUserToFile();
 			$("#create-repo").animate({
@@ -590,8 +589,9 @@ $("#write-event-form").submit(function () {
 				else $("#write-event-status").text("Successfully added new event");
 				$("#cancel-edit-btn").hide();
 				override_event = false;
-				clearEventDescription();
+				resetEventDescription();
 				update_event_list_table();
+				switch_page("#manage-events");
 			}
 		});
 	});
@@ -611,7 +611,7 @@ $("#cancel-edit-btn").click(function() {
 	$("#cancel-edit-btn").hide();
 	$("#write-event-form input[type=\"submit\"]").val("Add event");
 	override_event = false;
-	clearEventDescription();
+	resetEventDescription();
 });
 
 function getEventDescriptionXML(feed) {
@@ -660,13 +660,14 @@ function getEventDetails(description) {
 	return ev;
 }
 
-function clearEventDescription() {
+function resetEventDescription() {
 	$("#write-event-form input").val("");
 	$("#write-event-form textarea").val("");
 
-	$("input[name=\"event-date\"]").val(new Date().toDateInputValue());
-	$("input[name=\"event-time\"]").val("18:00");
-	$("input[type=\"submit\"").val("Add Event");
+	$("#write-event-form input[name=\"event-date\"]").val(new Date().toDateInputValue());
+	$("#write-event-form input[name=\"event-time\"]").val("18:00");
+	$("#write-event-form input[type=\"submit\"").val("Add Event");
+	$("#cancel-edit-btn").val("Cancel edit");
 }
 
 $("#archive-oldies").click(function () {
@@ -743,7 +744,7 @@ $("input[name=\"rss-repo\"]").keyup(function () {
 	legalize_input($(this));
 });
 
-$("input[name=\"org-name\"]").keyup(function () {
+$("input[name=\"owner-name\"]").keyup(function () {
 	legalize_input($(this));
 });
 
@@ -772,6 +773,7 @@ $(document).ready(function() {
 	$("#login-dropdown").css("min-width", $("#log-tab").width() - paddings($("#login-dropdown")) + "px");
 	loadUserFromFile();
 	$("input[name=\"event-date\"]").val(new Date().toDateInputValue());
+	resetEventDescription();
 });
 
 $("#github-logout").click(logoutOfGithub);
