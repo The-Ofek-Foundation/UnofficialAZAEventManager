@@ -11,7 +11,7 @@ const JSZip = require("jszip");
 const event_attributes = ["date", "name", "description", "time", "location_name", "bring", "planners", "location"];
 const gh_legals = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.'];
 
-var github = user = username = password = repos = repo_name = FeedRepo = FeedRepoInfo = logged_in = false;
+var github = user = username = password = repos = repo_name = FeedRepo = FeedRepoInfo = logged_in = owner = false;
 var override_event = false;
 var fr, file; // for reading contacts csv
 
@@ -74,7 +74,14 @@ function getUserRepos(user, callback) {
 }
 
 function getRepo(repo_name) {
-	return github.getRepo(username, repo_name);
+
+	return github.getRepo(owner, repo_name);
+}
+
+function create_repo(org, options, cb) {
+	if (org)
+		github._request('POST', '/orgs/' + org + '/repos', options, cb);
+	else github._request('POST', '/user/repos', options, cb);
 }
 
 function getFeed(callback) {
@@ -126,10 +133,20 @@ function updateHTMLFeed(events) {
 
 		var details_div = $("<div></div>").addClass('event-details');
 		var description = $("<p></p>").addClass('event-description').text(" " + event.description).prepend($("<strong></strong>").text("Description:"));
-		var meet = $("<p></p>").addClass('event-meet').html(" " + event.location_name + " (<a target=\"_blank\" href=\"https://maps.google.com/?q=" + event.location + "\">" + event.location + "</a>) at " + event.time).prepend($("<strong></strong>").text("Meet:"));
-		var bring = $("<p></p>").addClass('event-bring').text(" " + event.bring).prepend($("<strong></strong>").text("Bring:"));
-		var planned_by = $("<p></p>").addClass('planned_by').text(" " + event.planners).prepend($("<strong></strong>").text("Planned by:"));
-		details_div.append(description).append(meet).append(bring).append(planned_by);
+		details_div.append(description)
+		var meet;
+		if (event.location_name)
+			meet = $("<p></p>").addClass('event-meet').html(" " + event.location_name + (event.location ? (" (<a target=\"_blank\" href=\"https://maps.google.com/?q=" + event.location + "\">" + event.location + "</a>)"):"") + " at " + event.time).prepend($("<strong></strong>").text("Meet:"));
+		else meet = $("<p></p>").addClass('event-meet').text(" at " + event.time).prepend($("<strong></strong>").text("Meet"));
+		details_div.append(meet);
+		if (event.bring) {
+			var bring = $("<p></p>").addClass('event-bring').text(" " + event.bring).prepend($("<strong></strong>").text("Bring:"));
+			details_div.append(bring);
+		}
+		if (event.planners) {
+			var planned_by = $("<p></p>").addClass('planned_by').text(" " + event.planners).prepend($("<strong></strong>").text("Planned by:"));
+			details_div.append(planned_by);
+		}
 		item.append(details_div);
 
 		containing_div.append(item);
@@ -263,6 +280,7 @@ function vert_align() {
 function saveUserToFile() {
 	var userDetails = {};
 	userDetails.username = username;
+	userDetails.owner = owner;
 	userDetails.password = password;
 	if (FeedRepo && repo_name)
 		userDetails.repo_name = repo_name;
@@ -277,6 +295,7 @@ function loadUserFromFile() {
 		var userDetails = JSON.parse(data);
 		loginToGithub(userDetails.username, cryptr.decrypt(userDetails.password));
 		repo_name = userDetails.repo_name;
+		owner = userDetails.owner;
 
 		getUserRepos(user, function(err, repos) {
 			if (err) {
@@ -316,7 +335,7 @@ function loginToGithub(username, password) {
 }
 
 function logoutOfGithub() {
-	github = user = username = password = repos = repo_name = FeedRepo = FeedRepoInfo = logged_in = false;
+	github = user = username = password = repos = repo_name = FeedRepo = FeedRepoInfo = logged_in = owner = false;
 	setCookie("login-info", "", 0);
 	toggleLogDropdown($("#logout-dropdown"), false);
 	$("#log-tab a").text('Login');
@@ -337,6 +356,7 @@ function loginSuccess() {
 	$("#logout-dropdown").css("width", $("#log-tab").width() - paddings($("#logout-dropdown")) + "px");
 	toggleLogDropdown($("#login-dropdown"), false);
 	$(".login-alert").hide();
+	$("#create-repo").css("opacity", 1).css("margin-top", "0px");
 	$("#logged-in-div").animate({
 		opacity: 1,
 		"margin-top": 0
@@ -397,6 +417,7 @@ $("#github-login-form").submit(function() {
 	$("#login-err").text("");
 
 	var username = $("input[name=\"username\"]").val();
+	owner = username;
 	var password = $("input[name=\"password\"]").val();
 	loginToGithub(username, password);
 
@@ -420,12 +441,19 @@ $("#repo-name-form").submit(function() {
 
 	$("#generate-repos-span").text(" Generating...");
 	$("#login-err").text("");
+	var org = $("input[name=\"org-name\"]").val();
+	if (org)
+		owner = org;
 
-	user.createRepo({"name": repo_name}, function(err, res) {
+	create_repo(org, {"name": repo_name}, function(err, res) {
 		if (err) {
-			if (err.error == 422)
+			if (err.error === 422)
 				$("#login-err").text("Repo already exists!");
-			else popupError("Error creating repo, contact developer", err);
+			else if (err.error === 403)
+				popupError("Check your permission to access this repo");
+			else if (err.error === 404)
+				popupError("Organization not found", err);
+			else	popupError("Error creating repo, contact developer", err);
 			$("#generate-repos-span").text(" Error");
 		}
 		else {
@@ -433,7 +461,7 @@ $("#repo-name-form").submit(function() {
 			saveUserToFile();
 			FeedRepo.show(function (show_err, contents) {
 				if (show_err) {
-					if (show_err.error == 404)
+					if (show_err.error === 404)
 						popupError("Could not find repo, may use illegal characters");
 					else popupError("Unexpected show error, contact developer", show_err);
 					$("#generate-repos-span").text(" Error");
@@ -491,6 +519,9 @@ function generate_gh_pages(callback) {
 
 $("#repo-exists-btn").click(function () {
 	repo_name = $("#repo-exists").val();
+	var org = $("input[name=\"org-name\"]").val();
+	if (org)
+		owner = org;
 	FeedRepo = getRepo(repo_name);
 	$("#login-err").text("");
 	FeedRepo.show(function (err, contents) {
@@ -610,7 +641,8 @@ function getEventDescriptionForm() {
 				content += $("textarea[name=\"event-" + event_attributes[i] + "\"]").val();
 				break;
 			default:
-				content += $("input[name=\"event-" + event_attributes[i] + "\"]").val();
+				var val = $("input[name=\"event-" + event_attributes[i] + "\"]").val();
+				content += val ? val:" ";
 		}
 		content += br;
 	}
@@ -712,6 +744,10 @@ $("input[name=\"rss-repo\"]").keyup(function () {
 	legalize_input($(this));
 });
 
+$("input[name=\"org-name\"]").keyup(function () {
+	legalize_input($(this));
+});
+
 $("#repo-exists").keyup(function () {
 	legalize_input($(this));
 });
@@ -740,6 +776,7 @@ $(document).ready(function() {
 });
 
 $("#github-logout").click(logoutOfGithub);
+
 },{"clean-html":2,"cryptr":37,"cssbeautify":38,"github-api":39,"jquery":41,"jszip":50,"pretty-data":81}],2:[function(require,module,exports){
 var htmlparser = require('htmlparser2'),
     voidElements = [
