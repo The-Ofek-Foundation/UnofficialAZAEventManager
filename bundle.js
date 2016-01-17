@@ -311,12 +311,16 @@ function loadUserFromFile() {
 							else popupError("Repo error, contact developer", err);
 							FeedRepo = false;
 							saveUserToFile();
+							$("input[name=\"owner-name\"]").val(owner);
 						}
 						else FeedRepoInfo = contents;
 						loginSuccess();
 					});
 				}
-				else loginSuccess();
+				else {
+					$("input[name=\"owner-name\"]").val(owner);
+					loginSuccess();
+				}
 			}
 		});
 	}
