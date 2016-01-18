@@ -46,7 +46,7 @@ function readmeContents() {
 	contents += "    <br />\n";
 	contents += "    You ***don't*** need to add the **Longitude and Latitude**, they will automatically be added when generating the Chapter Pack using the [online website][chapter pack generation page]. **Put the google maps address to make sure it finds the contact's house.** An example csv file that you input could be:\n";
 	contents += "    \n";
-	contents += "     |  |   |  |  |  |  | \n";
+	contents += "     |  |   |  |  |  |  | | \n";
 	contents += "    :----: | :------: | :---------------: | :------------------------------: | :--------: | :---------: | :-----: | :------------:\n";
 	contents += "    Ofek Gila | Monta Vista High School | 2017 | \"4387 Bubb Rd, Cupertino, California\" | | | ofekgila@outlook.com | 555555555\n";
 	contents += "    James Smith | Coke Monster High | 2018 | \"James Smith Way Hawaii town\" | | | james.smith404@gmail.com | 555555555\n";
