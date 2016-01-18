@@ -58,10 +58,10 @@ function readmeContents() {
 	contents += "    <br /><br />\n";
 	contents += "3. **You're ready to go!**\n";
 	contents += "    \n";
-	contents += "    You're ready to start distributing your Chapter Pack to your chapter, and they will be able to load if from their [AZA app][gplay aza app]! Note they may need to go to \"Settings\" -> \"Load Chapter Pack\".\n";
+	contents += "    You're ready to start distributing your Chapter Pack to your chapter, and they will be able to load if from their [AZA app][gplay aza app]! Note they may need to go to \"Settings\" -> \"Load Chapter Pack\".\n\n";
 	contents += "### How can I include the RSS feed in my chapter's website?\n";
 	contents += "Great question! Simply go over to your [gh pages branch] and read the instructions!\n\n";
-
+	contents += "<br />";
 	contents += "For more information about this repository or the web app, contact ofekgila@outlook.com\n\n";
 
 	contents += "[event manager online app]:https://the-ofek-foundation.github.io/UnofficialAZAEventManager/ \"event manager web app\"\n";
