@@ -13,6 +13,8 @@ const csv = require("csv");
 const event_attributes = ["date", "name", "description", "time", "location_name", "bring", "planners", "location"];
 const gh_legals = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.'];
 
+const version_number = "1.0";
+
 var github = user = username = password = repos = repo_name = FeedRepo = FeedRepoInfo = logged_in = owner = false;
 var override_event = false;
 var fr, file; // for reading contacts csv
@@ -434,6 +436,62 @@ function fullLoginSuccess() {
 	$(".login-only").show();
 	update_event_list_table();
 	switch_page(window.location.hash);
+	update_if_necessary();
+}
+
+function update_if_necessary() {
+	FeedRepo.read('master', 'version.txt', function (err, curr_version) {
+		if (err == "not found")
+			curr_version = "0.0";
+		else if (err) {
+			console.error(err);
+			popupError("Strange Update Error, Contact Developer ", err);
+			return;
+		}
+		else if (curr_version == version_number)
+			return;
+		console.log("Updating...");
+		var queue = [];
+		switch (curr_version) {
+			case "0.0":
+				queue.push(update_readme);
+			default:
+				queue.push(update_version);
+		}
+		run_queue(queue, 0);
+	});
+}
+
+function run_queue(queue, index) {
+	if (index !== queue.length)
+		queue[index](function() {
+			run_queue(queue, index + 1);
+		});
+}
+
+function update_version(callback) {
+	FeedRepo.write("master", "version.txt", version_number, "Update version", function (err) {
+		if (err)
+			console.error("Error updating version.txt ", err);
+		callback();
+	});
+}
+
+function update_readme(callback) {
+	FeedRepo.write("master", "readme.md", readmeContents(), "Update readme", function (err) {
+		if (err)
+			console.error("Error updating readme");
+		callback();
+	});
+}
+
+function update_gh_readme(callback) {
+	FeedRepo.write("gh-pages", "README.md", ghReadmeContents(), "Update gh-pages readme", function (err) {
+		if (err)
+			console.error("Error updating gh-pages readme");
+		callback();
+	});
+
 }
 
 function popupError(err_message, log) {
@@ -575,7 +633,11 @@ function generate_gh_pages(callback) {
 					FeedRepo.write("master", "README.md", readmeContents(), "Create readme", function (readme_err) {
 						if (readme_err)
 							console.error("readme err ", readme_err);
-						callback();
+						FeedRepo.write("master", "version.txt", version_number, "Set version number", function (version_err) {
+							if (version_err)
+								console.error("version error ", version_err);
+							callback();
+						});
 					});
 				});
 			});
