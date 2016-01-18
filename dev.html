@@ -6,6 +6,7 @@
     <link rel="stylesheet/less" type="text/css" href="UnofficialAZAEventManager.less" />
     <script src="less.min.js" type="text/javascript"></script>
     <script src="site-utilities.js" type="text/javascript"></script>
+    <script src="FileSaver.min.js" type="text/javascript"></script>
     <link rel="icon" href="ramon-icon.ico" type="image/x-icon">
   </head>
   <body>
@@ -13,6 +14,7 @@
       <li><a class="active" href="#setup">Setup</a></li>
       <li><a href="#add-events" disabled>Add Events</a></li>
       <li><a href="#manage-events" disabled>Manage Events</a></li>
+      <li><a href="#chapter-pack" disabled>Chapter Packs</a></li>
       <ul style="float:right;l ist-style-type:none;">
         <li id="login-err"></li>
         <li id="log-tab"><a href="#login">Login</a></li>
@@ -21,7 +23,7 @@
     <div id="login-dropdown">
       <form id="github-login-form">
         <input type="text" placeholder="YOUR_USERNAME" name="username" required>
-        <input type="text" placeholder="YOUR_PASSWORD" name="password" required>
+        <input type="password" placeholder="YOUR_PASSWORD" name="password" required>
         <input type="submit" value="Login"> <!--<span id="login-err"></span>-->
       </form>
     </div>
@@ -34,10 +36,12 @@
       <h2 class="login-alert">Please login to github above to start!</h2>
       <div id="logged-in-div" style="opacity: 0; margin-top: -10px">
         <div id="create-repo" style="display: none;">
+          <h3 style="font-weight: 400;">Choose owner/organization name (for new or existing repo): <input class="inline" type="text" placeholder="OWNER_NAME" name="owner-name"></h3>
+          <h3 style="font-weight: 400;">Owned by organization? <input class="inline" type="checkbox" name="org-check"></h3>
           <form id="repo-name-form">
-            <h3>Choose a name for your RSS feed repo: <input class="inline" type="text" value="ChapterEventFeedRepo" name="rss-repo" required></h3>
+            <h3>Choose a name for your RSS feed repo: <input class="inline" type="text" value="ChapterEventFeedRepo" placeholder="REPO_NAME" name="rss-repo" required></h3>
             <div class="text-center">
-              <input type="submit" value="Create">
+              <input type="submit" value="Create"><span id="generate-repos-span"></span>
             </div>
           </form>
           <br />
@@ -46,7 +50,8 @@
       </div>
       <div class="login-only" style="display: none;">
         <h2>You have successfully logged in!!!</h2>
-        <h3>Head over to another tab to start managing your feed!</h3>
+        <h3 style="font-weight: normal"><i>Make sure to check out the <strong><a id="readme-ref" target="_blank">readme</a></strong> to learn how to manage the online rss-feed!</i></h3>
+        <p>Then, head over to another tab to start managing your feed!</p>
       </div>
     </div>
     <div class="page" id="add-events">
@@ -54,14 +59,14 @@
         <h3>Event Name: <input class="inline" type="text" name="event-name" placeholder="Fraternity Night" required></h3>
         <h3>Event Start Date: <input class="inline" type="date" name="event-date" required></h3>
         <h3>Event Description: <textarea name="event-description" placeholder="Event description" rows="1" required></textarea></h3>
-        <h3>Event Time: <input class="inline" type="time" name="event-time" value="18:00" required></h3>
-        <h3>What to bring: <input class="inline" type="text" name="event-bring" value="money for event" required></h3>
-        <h3>Event planner/s: <input class="inline" type="text" name="event-planners" placeholder="Abestein" required></h3>
-        <h3>Event Location Name: <input class="inline" type="text" name="event-location_name" placeholder="Abestein's house" required></h3>
-        <h3>Google maps location: <input class="inline" type="text" name="event-location" placeholder="11111 jason house way" required></h3>
+        <h3>Event Time: <input class="inline" type="time" name="event-time" required></h3>
+        <h3>What to bring: <input class="inline" type="text" name="event-bring" placeholder="money for event"></h3>
+        <h3>Event planner/s: <input class="inline" type="text" name="event-planners" placeholder="Abestein"></h3>
+        <h3>Event Location Name: <input class="inline" type="text" name="event-location_name" placeholder="Abestein's house"></h3>
+        <h3>Google maps location: <input class="inline" type="text" name="event-location" placeholder="11111 jason house way"></h3>
         <div class="text-center">
-          <input type="submit" value="Add event">
-          <input id="cancel-edit-btn" type="button" style="display: none;" value="Cancel edit">
+          <input type="submit">
+          <input id="cancel-edit-btn" type="button" style="display: none;">
         </div>
         <br />
         <div id="write-event-status"></div>
@@ -70,6 +75,7 @@
     <div class="page" id="manage-events">
       <h1>Start managing events!</h1>
       <button id="archive-oldies">Archive old events</button><span id="num-archived"></span>
+      <div id="view-feed-online"></div>
       <div id="event-list-table-div"></div>
     </div>
     <div id="screen-dim" style="display: none;"></div>
@@ -78,6 +84,26 @@
       <textarea id="strange-error" disabled></textarea>
       <button id="close-error-popup-btn">Close</button>
     </div>
+    <div class="page" id="chapter-pack">
+    <h1>Generate your chapter's chapter pack!</h1>
+    <ol id="chapter-pack-steps-list">
+      <li> Create your contact list csv file (view documentation <a href="https://github.com/ischeinkman/UnofficialAZAApp/wiki/Chapter-Packs#contactlistcsv" target="_blank">here</a>)</li>
+      <li> Upload your csv file here:</li>
+      <form id="chapter-pack-form">
+        <input type="file" name="contact-csv" id="contact-csv" accept=".csv">
+        <li> Generate and download your chapter pack!</li>
+        <strong>Note that the zip file must contain the words "Chapter Pack" to be recognized!</strong>
+        <br /><br />
+        <input type="submit" value="Generate and download">
+        <div id="csv-generation-progress">
+          Progress
+          <div id="csv-generation-bar"></div>
+        </div>
+      </form>
+      <li> Distribute the pack to mobile devices, and then open up the <a href="https://play.google.com/store/apps/details?id=org.ramonaza.unofficialazaapp&hl=en" target="_blank">AZA app</a></li>
+    </ol>
+    </div>
   </body>
   <script type="text/javascript" src="dev-bundle.js"></script>
+  <!--<script type="text/javascript" src="UnofficialAZAEventManager.js"></script>-->
 </html>
