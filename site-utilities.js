@@ -1,7 +1,7 @@
 function ghReadmeContents() {
-	var website_link = "https://" + FeedRepoInfo.owner.login + ".github.io/" + FeedRepoInfo.name + "/";
+	var website_link = "https://" + owner + ".github.io/" + FeedRepoInfo.name + "/";
 	var contents = "[online website]:" + website_link + " \"the online website\"\n";
-	contents += "[css file]:https://github.com/" + FeedRepoInfo.owner.login + "/" + FeedRepoInfo.name + "/blob/gh-pages/styles.css \"the css file\"\n";
+	contents += "[css file]:https://github.com/" + owner + "/" + FeedRepoInfo.name + "/blob/gh-pages/styles.css \"the css file\"\n";
 
 	contents += "# Welcome to your RSS Feed gh-pages branch!\n";
 	contents += "### What is this branch?\n";

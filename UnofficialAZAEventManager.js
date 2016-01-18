@@ -164,7 +164,7 @@ function updateHTMLFeed(events) {
 }
 
 function update_event_list_table() {
-	var online_list = "https://" + FeedRepoInfo.owner.login + ".github.io/" + FeedRepoInfo.name + "/";
+	var online_list = "https://" + owner + ".github.io/" + FeedRepoInfo.name + "/";
 	var ref = $("<a></a>").attr("href", online_list).attr("target", "_blank").text(online_list);
 	$("#view-feed-online").children().remove();
 	$("#view-feed-online").text("View feed online: ").append(ref);
@@ -262,10 +262,10 @@ function edit_event(event) {
 function generate_chapter_pack(csv_contents) {
 	var zip = new JSZip();
 	zip.file("ContactList.csv", csv_contents);
-	zip.file("EventFeed.txt", "https://raw.githubusercontent.com/" + FeedRepoInfo.owner.login + "/" + FeedRepoInfo.name + "/master/rss-feed.txt");
+	zip.file("EventFeed.txt", "https://raw.githubusercontent.com/" + owner + "/" + FeedRepoInfo.name + "/master/rss-feed.txt");
 	var content = zip.generate({type:"string"});
 
-	saveZip(content, "Chapter Pack - " + FeedRepoInfo.owner.login);
+	saveZip(content, "Chapter Pack - " + owner);
 }
 
 function vert_align() {
@@ -368,7 +368,7 @@ function loginSuccess() {
 }
 
 function fullLoginSuccess() {
-	$("#readme-ref").attr("href", "https://github.com/" + FeedRepoInfo.owner.login + "/" + FeedRepoInfo.name + "/tree/gh-pages");
+	$("#readme-ref").attr("href", "https://github.com/" + owner + "/" + FeedRepoInfo.name + "/tree/gh-pages");
 	$(".navbar > li a").removeAttr('disabled');
 	$(".login-only").show();
 	update_event_list_table();
