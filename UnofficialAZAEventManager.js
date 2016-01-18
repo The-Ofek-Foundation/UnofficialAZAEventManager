@@ -105,7 +105,7 @@ function getFeedEvents(feed) {
 	var events = {};
 
 	for (var i = 0; i < items.length; i++) {
-		var event_details = getEventDetails(items[i].getElementsByTagName("description")[0].childNodes[1].data.replace(/></g, "> <"));
+		var event_details = getEventDetails(items[i].getElementsByTagName("description")[0].childNodes[1].data.replace(/></g, ">  <"));
 		events[event_details.name] = event_details;
 	}
 
@@ -229,7 +229,7 @@ function delete_event(name) {
 				break;
 			}
 
-		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)).replace(/></g, "> <"), "Update Event Feed", function(write_err) {
+		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)).replace(/></g, ">  <"), "Update Event Feed", function(write_err) {
 			if (write_err)
 				popupError("File already deleted", write_err);
 			else update_event_list_table();
@@ -580,7 +580,7 @@ $("#write-event-form").submit(function () {
 			feed.getElementsByTagName("channel")[0].appendChild(new_event);
 		}
 
-		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)).replace(/></g, "> <"), "Update Event Feed", function(write_err) {
+		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)).replace(/></g, ">  <"), "Update Event Feed", function(write_err) {
 			if (write_err)
 				popupError("Error writing to rss-feed.txt", write_err);
 			else {
@@ -701,7 +701,7 @@ $("#archive-oldies").click(function () {
 			}
 		}
 
-		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)).replace(/></g, "> <"), "Update Event Feed", function(write_err) {
+		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)).replace(/></g, ">  <"), "Update Event Feed", function(write_err) {
 			if (write_err)
 				popupError("Files already deleted/archived", write_err);
 			else update_event_list_table();
