@@ -293,7 +293,11 @@ function add_coordinates(data, index, callback) {
 		});
 	else	{
 		$("#csv-generation-text").text("Progress - " + data[index][0]);
-		geocoder.geocode({'address': data[index][3]}, function (result, status) {
+		if (data[index][4] && data[index][5]) {
+			update_coordinates_progress(index + 1, data.length);
+			add_coordinates(data, index + 1, callback);
+		}
+		else geocoder.geocode({'address': data[index][3]}, function (result, status) {
 			if (status == google.maps.GeocoderStatus.OK && result[0]) {
 				var location_info = get_location_info(result[0]);
 				data[index][3] = location_info.street_number + " " + location_info.route + ", " + location_info.locality + " " + location_info.postal_code;
