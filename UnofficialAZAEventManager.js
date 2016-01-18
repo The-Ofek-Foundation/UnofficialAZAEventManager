@@ -263,12 +263,13 @@ function edit_event(event) {
 	$("#write-event-status").text("");
 }
 
-function generate_chapter_pack(csv_contents) {
+function generate_chapter_pack(csv_contents, bounds) {
 	var zip = new JSZip();
-	csv_contents = format_csv(csv_contents, function (err, csv_data) {
+	format_csv(csv_contents, bounds, function (err, csv_data) {
 		if (err)
 			popupError("Error parsing csv", err);
 		else {
+			$("#csv-generation-text").text("Done generating csv");
 			zip.file("ContactList.csv", csv_data);
 			zip.file("EventFeed.txt", "https://raw.githubusercontent.com/" + owner + "/" + FeedRepoInfo.name + "/master/rss-feed.txt");
 			var content = zip.generate({type:"string"});
@@ -278,43 +279,75 @@ function generate_chapter_pack(csv_contents) {
 	});
 }
 
-function format_csv(csv_contents, callback) {
+function format_csv(csv_contents, bounds, callback) {
 	csv.parse(csv_contents, function (err, data) {
 		if (err) {
 			console.error("Error parsing csv", err);
 			callback(err, null);
 		}
-		else add_coordinates(data, 0, callback);
+		else add_coordinates(data, bounds, 0, [], [], 0.0, 0.0, 0, callback);
 	});
 }
 
-function add_coordinates(data, index, callback) {
+function add_coordinates(data, bounds, index, ambiguous_addresses, ambiguous_indexes, latitude_total, longitude_total, total_successes, callback) {
 	if (index === data.length)
-		csv.stringify(data, function (err, string_data) {
-			callback(err, string_data);
-		});
+		fix_ambiguous_addresses(data, ambiguous_addresses, ambiguous_indexes, latitude_total / total_successes, longitude_total / total_successes, callback);
 	else	{
 		$("#csv-generation-text").text("Progress - " + data[index][0]);
-		if (data[index][4] && data[index][5]) {
+		if (data[index][4] && data[index][5] && !isNaN(data[index][4]) && !isNaN(data[index][5])) {
 			update_coordinates_progress(index + 1, data.length);
-			add_coordinates(data, index + 1, callback);
+			add_coordinates(data, bounds, index + 1, ambiguous_addresses, ambiguous_indexes, latitude_total + parseFloat(data[index][4]), longitude_total + parseFloat(data[index][5]), total_successes + 1, callback);
 		}
-		else geocoder.geocode({'address': data[index][3]}, function (result, status) {
-			if (status == google.maps.GeocoderStatus.OK && result[0]) {
+		else geocoder.geocode({'address': data[index][3], 'bounds': bounds}, function (result, status) {
+			if (status == google.maps.GeocoderStatus.OK && result.length === 1) {
 				var location_info = get_location_info(result[0]);
 				data[index][3] = location_info.street_number + " " + location_info.route + ", " + location_info.locality + " " + location_info.postal_code;
 				data[index][4] = location_info.latitude;
 				data[index][5] = location_info.longitude;
-			} else if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
+				update_coordinates_progress(index + 1, data.length);
+				add_coordinates(data, bounds, index + 1, ambiguous_addresses, ambiguous_indexes, latitude_total + parseFloat(location_info.latitude), longitude_total + parseFloat(location_info.longitude), total_successes + 1, callback);
+			} else if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT)
 				setTimeout(function() {
-					add_coordinates(data, index, callback);
-				}, 200);
-				return;
+					add_coordinates(data, bounds, index, ambiguous_addresses, ambiguous_indexes, latitude_total, longitude_total, total_successes, callback);
+				}, 500);
+			else if (status == google.maps.GeocoderStatus.OK && result.length > 1)	{
+				ambiguous_addresses.push(result);
+				ambiguous_indexes.push(index);
+				update_coordinates_progress(index + 1, data.length);
+				add_coordinates(data, bounds, index + 1, ambiguous_addresses, ambiguous_indexes, latitude_total, longitude_total, total_successes, callback);
 			}
-			update_coordinates_progress(index + 1, data.length);
-			add_coordinates(data, index + 1, callback);
+			else {
+				update_coordinates_progress(index + 1, data.length);
+				add_coordinates(data, bounds, index + 1, ambiguous_addresses, ambiguous_indexes, latitude_total, longitude_total, total_successes, callback);
+			}
 		});
 	}
+}
+
+function fix_ambiguous_addresses(data, ambiguous_addresses, ambiguous_indexes, avg_latitude, avg_longitude, callback) {
+	$("#csv-generation-text").text("Fixing ambiguous addresses...");
+	for (var i = 0; i < ambiguous_indexes.length; i++) {
+		var best_result, best_error = 360;
+		for (var a = 0; a < ambiguous_addresses[i].length; a++) {
+			var error = get_distance(avg_latitude, avg_longitude, ambiguous_addresses[i][a].geometry.location.lat(), ambiguous_addresses[i][a].geometry.location.lng());
+			if (error < best_error) {
+				best_error = error;
+				best_result = ambiguous_addresses[i][a];
+			}
+		}
+		var location_info = get_location_info(best_result);
+		data[ambiguous_indexes[i]][3] = location_info.street_number + " " + location_info.route + ", " + location_info.locality + " " + location_info.postal_code;
+		data[ambiguous_indexes[i]][4] = location_info.latitude;
+		data[ambiguous_indexes[i]][5] = location_info.longitude;
+	}
+
+	csv.stringify(data, function (err, string_data) {
+		callback(err, string_data);
+	});
+}
+
+function get_distance(x1, y1, x2, y2) {
+	return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
 }
 
 function update_coordinates_progress(index, total) {
@@ -734,7 +767,20 @@ $("#write-event-form").submit(function () {
 
 $("#chapter-pack-form").submit(function () {
 	getFileContents('contact-csv', function (contents) {
-		generate_chapter_pack(contents);
+		geocoder.geocode({'address': $("input[name=\"city-at\"]").val()}, function (results, status) {
+			if (status == google.maps.GeocoderStatus.OK && results.length === 1) {
+				var bounds = {};
+				bounds.north = results[0].geometry.bounds.R.j + 0.5;
+				bounds.south = results[0].geometry.bounds.R.R - 0.5;
+				bounds.west = results[0].geometry.bounds.j.j - 0.5;
+				bounds.east = results[0].geometry.bounds.j.R + 0.5;
+
+				generate_chapter_pack(contents, bounds);
+			}
+			else if (status == google.maps.GeocoderStatus.OK)
+				popupError("Enter a more precise city description (state, zipcode)");
+			else popupError("Bad address");
+		});
 	});
 
 	return false;

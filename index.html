@@ -92,9 +92,11 @@
     <h1>Generate your chapter's chapter pack!</h1>
     <ol id="chapter-pack-steps-list">
       <li> Create your contact list csv file (view documentation <a href="https://github.com/ischeinkman/UnofficialAZAApp/wiki/Chapter-Packs#contactlistcsv" target="_blank">here</a>)</li>
-      <li> Upload your csv file here:</li>
       <form id="chapter-pack-form">
-        <input type="file" name="contact-csv" id="contact-csv" accept=".csv">
+        <li> Upload your csv file here:</li>
+        <input type="file" name="contact-csv" id="contact-csv" accept=".csv" required>
+        <li> Enter the city of your chapter for more accurate results </li>
+        <input type="text" name="city-at" placeholder="Cupertino CA, 95014" required>
         <li> Generate and download your chapter pack!</li>
         <strong>Note that the zip file must contain the words "Chapter Pack" to be recognized!</strong>
         <br /><br />
