@@ -6,6 +6,8 @@ const cryptr = new Cryptr("the-ofek-foundation");
 const html = require("html");
 const cssbeautify = require("cssbeautify");
 const JSZip = require("jszip");
+const geocoder = new google.maps.Geocoder();
+const csv = require("csv");
 
 const event_attributes = ["date", "name", "description", "time", "location_name", "bring", "planners", "location"];
 const gh_legals = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.'];
@@ -261,11 +263,65 @@ function edit_event(event) {
 
 function generate_chapter_pack(csv_contents) {
 	var zip = new JSZip();
-	zip.file("ContactList.csv", csv_contents);
-	zip.file("EventFeed.txt", "https://raw.githubusercontent.com/" + owner + "/" + FeedRepoInfo.name + "/master/rss-feed.txt");
-	var content = zip.generate({type:"string"});
+	csv_contents = format_csv(csv_contents, function (err, csv_data) {
+		if (err)
+			popupError("Error parsing csv", err);
+		else {
+			zip.file("ContactList.csv", csv_data);
+			zip.file("EventFeed.txt", "https://raw.githubusercontent.com/" + owner + "/" + FeedRepoInfo.name + "/master/rss-feed.txt");
+			var content = zip.generate({type:"string"});
 
-	saveZip(content, "Chapter Pack - " + owner);
+			saveZip(content, "Chapter Pack - " + owner);
+		}
+	});
+}
+
+function format_csv(csv_contents, callback) {
+	csv.parse(csv_contents, function (err, data) {
+		if (err) {
+			console.error("Error parsing csv", err);
+			callback(err, null);
+		}
+		else add_coordinates(data, 0, callback);
+	});
+}
+
+function add_coordinates(data, index, callback) {
+	if (index === data.length)
+		csv.stringify(data, function (err, string_data) {
+			callback(err, string_data);
+		});
+	else	{
+		$("#csv-generation-text").text("Progress - " + data[index][0]);
+		geocoder.geocode({'address': data[index][3]}, function (result, status) {
+			if (status == google.maps.GeocoderStatus.OK && result[0]) {
+				var location_info = get_location_info(result[0]);
+				data[index][3] = location_info.street_number + " " + location_info.route + ", " + location_info.locality + " " + location_info.postal_code;
+				data[index][4] = location_info.latitude;
+				data[index][5] = location_info.longitude;
+			} else if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
+				setTimeout(function() {
+					add_coordinates(data, index, callback);
+				}, 200);
+				return;
+			}
+			update_coordinates_progress(index + 1, data.length);
+			add_coordinates(data, index + 1, callback);
+		});
+	}
+}
+
+function update_coordinates_progress(index, total) {
+	$("#csv-generation-bar").animate({width: $("#csv-generation-progress").outerWidth(false) * index / total + "px"}, 100);
+}
+
+function get_location_info(data) {
+	var location_info = {};
+	location_info.longitude = data.geometry.location.lng();
+	location_info.latitude = data.geometry.location.lat();
+	for (var i = 0; i < data.address_components.length; i++)
+		location_info[data.address_components[i].types[0]] = data.address_components[i].long_name;
+	return location_info;
 }
 
 function vert_align() {
