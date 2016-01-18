@@ -3,7 +3,7 @@ const $ = require('jquery');
 const pd = require('pretty-data').pd;
 const Cryptr = require("cryptr");
 const cryptr = new Cryptr("the-ofek-foundation");
-const cleaner = require("clean-html");
+const html = require("html");
 const cssbeautify = require("cssbeautify");
 const JSZip = require("jszip");
 
@@ -134,7 +134,7 @@ function updateHTMLFeed(events) {
 		details_div.append(description)
 		var meet;
 		if (event.location_name && event.location_name !== ' ')
-			meet = $("<p></p>").addClass('event-meet').html(" " + event.location_name + ((event.location || event.location !== ' ') ? (" (<a target=\"_blank\" href=\"https://maps.google.com/?q=" + event.location + "\">" + event.location + "</a>)"):"") + " at " + event.time).prepend($("<strong></strong>").text("Meet:"));
+			meet = $("<p></p>").addClass('event-meet').html(" " + event.location_name + ((event.location || event.location !== ' ') ? (' (<a target="_blank" href="https://maps.google.com/?q=' + event.location + "\">" + event.location + "</a>)"):"") + " at " + event.time).prepend($("<strong></strong>").text("Meet:"));
 		else meet = $("<p></p>").addClass('event-meet').text(" at " + event.time).prepend($("<strong></strong>").text("Meet"));
 		details_div.append(meet);
 		if (event.bring && event.bring !== ' ') {
@@ -156,11 +156,10 @@ function updateHTMLFeed(events) {
 
 	var father = $("<div></div>").append(containing_div);
 
-	cleaner.clean(father.html(), function (html) {
-		FeedRepo.write("gh-pages", "index.html", html, "Update Event Feed HTML", function(write_err) {
-			if (write_err)
-				popupError("Error creating html", write_err);
-		});
+	var pretty = html.prettyPrint(father.html(), {indent_size: 2});
+	FeedRepo.write("gh-pages", "index.html", pretty, "Update Event Feed HTML", function(write_err) {
+		if (write_err)
+			popupError("Error creating html", write_err);
 	});
 }
 
@@ -230,7 +229,7 @@ function delete_event(name) {
 				break;
 			}
 
-		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)), "Update Event Feed", function(write_err) {
+		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)).replace(/></g, "> <"), "Update Event Feed", function(write_err) {
 			if (write_err)
 				popupError("File already deleted", write_err);
 			else update_event_list_table();
@@ -581,7 +580,7 @@ $("#write-event-form").submit(function () {
 			feed.getElementsByTagName("channel")[0].appendChild(new_event);
 		}
 
-		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)), "Update Event Feed", function(write_err) {
+		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)).replace(/></g, "> <"), "Update Event Feed", function(write_err) {
 			if (write_err)
 				popupError("Error writing to rss-feed.txt", write_err);
 			else {
@@ -702,7 +701,7 @@ $("#archive-oldies").click(function () {
 			}
 		}
 
-		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)), "Update Event Feed", function(write_err) {
+		FeedRepo.write("master", "rss-feed.txt", pd.xml(XMLToString(feed)).replace(/></g, "> <"), "Update Event Feed", function(write_err) {
 			if (write_err)
 				popupError("Files already deleted/archived", write_err);
 			else update_event_list_table();
