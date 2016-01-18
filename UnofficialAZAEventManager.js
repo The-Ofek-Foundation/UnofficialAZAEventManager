@@ -518,6 +518,11 @@ function generate_gh_pages(callback) {
 	});
 }
 
+$("#repo-exists").keypress(function (e) {
+	if (e.which === 13) // enter key
+		$("#repo-exists-btn").click();
+});
+
 $("#repo-exists-btn").click(function () {
 	repo_name = $("#repo-exists").val();
 	owner = $("input[name=\"owner-name\"]").val();
