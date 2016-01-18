@@ -428,7 +428,7 @@ function loginSuccess() {
 }
 
 function fullLoginSuccess() {
-	$("#readme-ref").attr("href", "https://github.com/" + owner + "/" + FeedRepoInfo.name + "/tree/gh-pages");
+	$("#readme-ref").attr("href", "https://github.com/" + owner + "/" + FeedRepoInfo.name);
 	$(".navbar > li a").removeAttr('disabled');
 	$(".login-only").show();
 	update_event_list_table();
@@ -571,7 +571,11 @@ function generate_gh_pages(callback) {
 				FeedRepo.write("gh-pages", "README.md", ghReadmeContents(), "Create gh readme", function (readme_gh_err) {
 					if (readme_gh_err)
 						console.error("readme gh err ", readme_gh_err);
-					callback();
+					FeedRepo.write("master", "README.md", readmeContents(), "Create readme", function (readme_err) {
+						if (readme_err)
+							console.error("readme err ", readme_err);
+						callback();
+					});
 				});
 			});
 		});
