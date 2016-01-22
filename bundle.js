@@ -464,7 +464,9 @@ function loginSuccess() {
 }
 
 function fullLoginSuccess() {
-	$("#readme-ref").attr("href", "https://github.com/" + owner + "/" + FeedRepoInfo.name);
+	var main_website = "https://github.com/" + owner + "/" + FeedRepoInfo.name;
+	$("#readme-ref").attr("href", main_website);
+	$("#csv-info").attr('href', main_website);
 	$(".navbar > li a").removeAttr('disabled');
 	$(".login-only").show();
 	update_event_list_table();
