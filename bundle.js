@@ -529,6 +529,10 @@ function update_gh_readme(callback) {
 
 function popupError(err_message, log) {
 	$("#screen-dim").show();
+	if (log && log.error && log.error === 0) {
+		err_message = "This page has no ads, but the adblock software messes things up. Please disable it for this page.";
+		log = false;
+	}
 	$("#error-popup-text").text(err_message);
 	$("#error-popup").show();
 	if (log) {
