@@ -266,3 +266,8 @@ function saveZip(content, file_name) {
 	var blob = new Blob([str2bytes(content)], {type: "application/zip"});
 	saveAs(blob, file_name);
 }
+
+function remove_children(elem) {
+	for (var child = elem.firstChild; child; child = elem.firstChild)
+		elem.removeChild(child);
+}

@@ -171,11 +171,11 @@ function updateHTMLFeed(events) {
 function update_event_list_table() {
 	var online_list = "https://" + owner + ".github.io/" + FeedRepoInfo.name + "/";
 	var ref = $("<a></a>").attr("href", online_list).attr("target", "_blank").text(online_list);
-	$("#view-feed-online").children().remove();
+	remove_children(document.getElementById("view-feed-online"));
 	$("#view-feed-online").text("View feed online: ").append(ref);
 	getFeed(function (err, contents) {
 		var feed;
-		$("#event-list-table-div").children().remove();
+		remove_children(document.getElementById("event-list-table-div"));
 		$("#event-list-table-div").text("");
 		try {
 			$.parseXML(contents);
@@ -196,12 +196,8 @@ function update_event_list_table() {
 			var row = $("<tr></tr>");
 			var cols = new Array(2);
 			cols[0] = $("<td></td>").text(event_name + " - " + dateMinimize(events[event_name].date));
-			var delete_button = $("<button></button>").data("event-name", event_name).text("Delete").click(function () {
-				delete_event($(this).data("event-name"));
-			});
-			var edit_button = $("<button></button>").text("Edit").data("event-details", JSON.stringify(events[event_name])).click(function() {
-				edit_event(JSON.parse($(this).data("event-details")));
-			});
+			var delete_button = $("<button></button>").data("event-name", event_name).text("Delete");
+			var edit_button = $("<button></button>").text("Edit").data("event-details", JSON.stringify(events[event_name]));
 			cols[1] = $("<td></td>").append(delete_button).append(edit_button);
 
 			for (var i = 0; i < cols.length; i++)
@@ -213,6 +209,14 @@ function update_event_list_table() {
 		else $("#event-list-table-div").append(table);
 	});
 }
+
+$("#event-list-table-div").click(function (event) {
+	var target = $(event.target);
+	if (target.data("event-details"))
+		edit_event(JSON.parse(target.data("event-details")));
+	else if (target.data("event-name"))
+		delete_event(target.data("event-name"));
+});
 
 function delete_event(name) {
 	getFeed(function (err, contents) {
