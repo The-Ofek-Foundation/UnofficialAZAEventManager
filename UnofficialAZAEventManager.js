@@ -775,15 +775,17 @@ $("#write-event-form").submit(function () {
 	return false;
 });
 
+var results;
 $("#chapter-pack-form").submit(function () {
 	getFileContents('contact-csv', function (contents) {
 		geocoder.geocode({'address': $("input[name=\"city-at\"]").val()}, function (results, status) {
 			if (status == google.maps.GeocoderStatus.OK && results.length === 1) {
 				var bounds = {};
-				bounds.north = results[0].geometry.bounds.R.j + 0.5;
-				bounds.south = results[0].geometry.bounds.R.R - 0.5;
+				this.results = results;
+				bounds.north = results[0].geometry.bounds.H.j + 0.5;
+				bounds.south = results[0].geometry.bounds.H.H - 0.5;
 				bounds.west = results[0].geometry.bounds.j.j - 0.5;
-				bounds.east = results[0].geometry.bounds.j.R + 0.5;
+				bounds.east = results[0].geometry.bounds.j.H + 0.5;
 
 				generate_chapter_pack(contents, bounds);
 			}
