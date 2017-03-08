@@ -781,11 +781,33 @@ $("#chapter-pack-form").submit(function () {
 		geocoder.geocode({'address': $("input[name=\"city-at\"]").val()}, function (results, status) {
 			if (status == google.maps.GeocoderStatus.OK && results.length === 1) {
 				var bounds = {};
+				var rbounds = results[0].geometry.bounds;
 				this.results = results;
-				bounds.north = results[0].geometry.bounds.H.j + 0.5;
-				bounds.south = results[0].geometry.bounds.H.H - 0.5;
-				bounds.west = results[0].geometry.bounds.j.j - 0.5;
-				bounds.east = results[0].geometry.bounds.j.H + 0.5;
+				var count = 0;
+				for (i in rbounds)
+					for (a in rbounds[i]) {
+						if (typeof rbounds[i][a] !== 'number')
+							continue;
+						switch (count) {
+							case 0:
+								bounds.south = rbounds[i][a] - 0.5;
+								break;
+							case 1:
+								bounds.north = rbounds[i][a] + 0.5;
+								break;
+							case 2:
+								bounds.east = rbounds[i][a] + 0.5;
+								break;
+							case 3:
+								bounds.west = rbounds[i][a] - 0.5;
+								break;
+						}
+						count++;
+					}
+				// bounds.north = results[0].geometry.bounds.b.f + 0.5;
+				// bounds.south = results[0].geometry.bounds.b.b - 0.5;
+				// bounds.west = results[0].geometry.bounds.f.f - 0.5;
+				// bounds.east = results[0].geometry.bounds.f.b + 0.5;
 
 				generate_chapter_pack(contents, bounds);
 			}

@@ -23,6 +23,7 @@
     "url": "https://github.com/The-Ofek-Foundation/UnofficialAZAEventManager/issues"
   },
   "devDependencies": {
+    "electron": "^1.6.1",
     "electron-prebuilt": "^0.36.0"
   },
   "dependencies": {
